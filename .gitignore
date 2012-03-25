@@ -1,4 +1,4 @@
 *.sdf
-ipch
-Debug
-Release
+*/ipch
+*/Release
+*/Debug
