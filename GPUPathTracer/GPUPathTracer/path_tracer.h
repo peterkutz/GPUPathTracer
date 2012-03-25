@@ -1,6 +1,5 @@
 #pragma once
 
-// TODO: Which of these are necessary here?
 #include <cuda_runtime.h>
 
 class PathTracer {
