@@ -43,7 +43,7 @@ int mouse_buttons = 0;
 float rotate_x = 0.0, rotate_y = 0.0;
 float translate_z = -30.0;
 
-//PathTracer pathTracer;
+PathTracer pathTracer;
 
 ////////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -76,10 +76,12 @@ int main( int argc, char** argv)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Run a simple particle simulation for CUDA
+// Initialize things.
 ////////////////////////////////////////////////////////////////////////////////
 void initializeThings( int argc, char** argv)
 {
+
+
     // Create GL context
     glutInit( &argc, argv);
     glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);

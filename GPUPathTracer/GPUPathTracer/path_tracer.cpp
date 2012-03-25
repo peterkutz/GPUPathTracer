@@ -36,8 +36,17 @@ void launch_kernel(int numSpheres, float3* spherePositions, float3* sphereRadii,
 PathTracer::PathTracer() {
 
 	setUpScene();
+	createDeviceData();
 
 }
+
+
+PathTracer::~PathTracer() {
+
+	deleteDeviceData();
+
+}
+
 
 void PathTracer::setImageSize(int _imageWidth, int _imageHeight) {
 
