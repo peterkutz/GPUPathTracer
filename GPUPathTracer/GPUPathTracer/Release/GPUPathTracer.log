@@ -1,0 +1,610 @@
+﻿Build started 3/25/2012 1:26:41 AM.
+     1>Project "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\GPUPathTracer.vcxproj" on node 2 (build target(s)).
+     1>PrepareForBuild:
+         Creating directory "C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\".
+       InitializeBuildStatus:
+         Creating "Release\GPUPathTracer.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       AddCudaCompileDeps:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include" /I. /FIcuda_runtime.h /c C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\path_tracer.cu 
+       AddCudaCompileDeps:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include" /I. /FIcuda_runtime.h /c C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\kernel.cu 
+       AddCudaCompilePropsDeps:
+         Found "CudaToolkitCustomDir".
+         Found "AdditionalDeps".
+         Found "CompileOut".
+         Found "Include".
+         Found "Keep".
+         Found "KeepDir".
+         Found "NvccCompilation".
+         Found "NvccPath".
+         Found "RequiredIncludes".
+         Found "TargetMachinePlatform".
+         Found "CInterleavedPTX".
+         Found "CodeGeneration".
+         Found "GPUDebugInfo".
+         Found "MaxRegCount".
+         Found "PtxAsOptionV".
+         Found "Defines".
+         Found "Emulation".
+         Found "HostDebugInfo".
+         Found "FastMath".
+         Found "Optimization".
+         Found "Runtime".
+         Found "RuntimeChecks".
+         Found "TypeInfo".
+         Found "Warning".
+         Found "AdditionalOptions".
+         Found "CommandLineTemplate".
+       AddCudaCompilePropsDeps:
+         Found "CudaToolkitCustomDir".
+         Found "AdditionalDeps".
+         Found "CompileOut".
+         Found "Include".
+         Found "Keep".
+         Found "KeepDir".
+         Found "NvccCompilation".
+         Found "NvccPath".
+         Found "RequiredIncludes".
+         Found "TargetMachinePlatform".
+         Found "CInterleavedPTX".
+         Found "CodeGeneration".
+         Found "GPUDebugInfo".
+         Found "MaxRegCount".
+         Found "PtxAsOptionV".
+         Found "Defines".
+         Found "Emulation".
+         Found "HostDebugInfo".
+         Found "FastMath".
+         Found "Optimization".
+         Found "Runtime".
+         Found "RuntimeChecks".
+         Found "TypeInfo".
+         Found "Warning".
+         Found "AdditionalOptions".
+         Found "CommandLineTemplate".
+       CudaBuild:
+         Compiling CUDA source file path_tracer.cu...
+         cmd.exe /C "C:\Users\Peter\AppData\Local\Temp\620c944870b344f78670cb4fed09fdcc.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MD " -o "Release\path_tracer.cu.obj" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\path_tracer.cu"
+         
+         C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MD " -o "Release\path_tracer.cu.obj" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\path_tracer.cu" 
+         path_tracer.cu
+     1>C:/Users/Peter/GPUPathTracer/GPUPathTracer/GPUPathTracer/path_tracer.cu(18): warning : variable "something" was declared but never referenced
+         
+     1>C:/Users/Peter/GPUPathTracer/GPUPathTracer/GPUPathTracer/path_tracer.cu(24): warning : variable "validIndex" was declared but never referenced
+         
+         tmpxft_000019d8_00000000-0_path_tracer.cudafe1.gpu
+         tmpxft_000019d8_00000000-5_path_tracer.cudafe2.gpu
+         path_tracer.cu
+     1>C:/Users/Peter/GPUPathTracer/GPUPathTracer/GPUPathTracer/path_tracer.cu(18): warning : variable "something" was declared but never referenced
+         
+     1>C:/Users/Peter/GPUPathTracer/GPUPathTracer/GPUPathTracer/path_tracer.cu(24): warning : variable "validIndex" was declared but never referenced
+         
+         tmpxft_000019d8_00000000-0_path_tracer.cudafe1.cpp
+         tmpxft_000019d8_00000000-11_path_tracer.ii
+       CudaBuild:
+         Compiling CUDA source file kernel.cu...
+         cmd.exe /C "C:\Users\Peter\AppData\Local\Temp\b5137f29940c4cf9b9639f4dceb78b26.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MD " -o "Release\kernel.cu.obj" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\kernel.cu"
+         
+         C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MD " -o "Release\kernel.cu.obj" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\kernel.cu" 
+         kernel.cu
+         tmpxft_00001654_00000000-0_kernel.cudafe1.gpu
+         tmpxft_00001654_00000000-5_kernel.cudafe2.gpu
+         kernel.cu
+         tmpxft_00001654_00000000-0_kernel.cudafe1.cpp
+         tmpxft_00001654_00000000-11_kernel.ii
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../glm /I../freeglut/include /I../glew/include /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /showIncludes /analyze- /errorReport:prompt display.cpp path_tracer.cpp
+         display.cpp
+         Note: including file: C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\windows.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\sdkddkver.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\excpt.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\sal.h
+         Note: including file:     c:\program files (x86)\microsoft visual studio 10.0\vc\include\codeanalysis\sourceannotations.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\vadefs.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdarg.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\windef.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnt.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\ctype.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\sal_supp.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\specstrings_supp.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings_strict.h
+         Note: including file:      C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings_undef.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\driverspecs.h
+         Note: including file:      c:\program files (x86)\microsoft sdks\windows\v7.0a\include\sdv_driverspecs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\kernelspecs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\basetsd.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\guiddef.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\string.h
+         Note: including file:      c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack2.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack2.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack8.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ktmtypes.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winbase.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winerror.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wingdi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winuser.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\tvout.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnls.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wincon.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winver.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\verrsrc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winreg.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\reason.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnetwk.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wnnc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\cderr.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\dde.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ddeml.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\dlgs.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\lzexpand.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\mmsystem.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\nb30.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpc.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcdce.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcdcep.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnsi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnterr.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcasync.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\shellapi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winperf.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winsock.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\inaddr.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wincrypt.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\bcrypt.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ncrypt.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\bcrypt.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winefs.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winscard.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wtypes.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\rpcndr.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnsip.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcsal.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\guiddef.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winioctl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   c:\program files (x86)\microsoft sdks\windows\v7.0a\include\winsmcrd.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winspool.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\prsht.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ole2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\objbase.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdlib.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\limits.h
+         Note: including file:      c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\unknwn.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\objidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\guiddef.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\cguid.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\urlmon.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\oleidl.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\servprov.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\msxml.h
+         Note: including file:      c:\program files (x86)\microsoft sdks\windows\v7.0a\include\oaidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\propidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\oleauto.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\commdlg.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\prsht.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\stralign.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winsvc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\mcx.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\imm.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ime_cmodes.h
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdio.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\swprintf.inl
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\cmath
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\yvals.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\use_ansi.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\math.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\ctime
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\time.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\wtime.inl
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\time.inl
+         Note: including file: C:\Users\Peter\GPUPathTracer\GPUPathTracer\glew\include\GL/glew.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\GL/glu.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\GL/gl.h
+         Note: including file: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_config.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stddef.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\channel_descriptor.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\cuda_runtime_api.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\cuda_runtime_api.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_functions.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_functions.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_gl_interop.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:  c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\GL/gl.h
+         Note: including file: c:\users\peter\gpupathtracer\gpupathtracer\gpupathtracer\cutil_math.h
+         Note: including file:  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\math.h
+         Note: including file: C:\Users\Peter\GPUPathTracer\GPUPathTracer\freeglut\include\GL/glut.h
+         Note: including file:  c:\users\peter\gpupathtracer\gpupathtracer\freeglut\include\gl\freeglut_std.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\GL/gl.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\GL/glu.h
+         Note: including file: c:\users\peter\gpupathtracer\gpupathtracer\gpupathtracer\path_tracer.h
+         Note: including file:  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+     1>display.cpp(188): warning C4244: '=' : conversion from 'double' to 'signed char', possible loss of data
+     1>display.cpp(189): warning C4244: '=' : conversion from 'double' to 'signed char', possible loss of data
+     1>display.cpp(190): warning C4244: '=' : conversion from 'double' to 'signed char', possible loss of data
+         path_tracer.cpp
+         Note: including file: c:\users\peter\gpupathtracer\gpupathtracer\gpupathtracer\path_tracer.h
+         Note: including file:  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_config.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\limits.h
+         Note: including file:      c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:       c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\sal.h
+         Note: including file:        c:\program files (x86)\microsoft visual studio 10.0\vc\include\codeanalysis\sourceannotations.h
+         Note: including file:       c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\vadefs.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stddef.h
+         Note: including file:      c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\channel_descriptor.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\cuda_runtime_api.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:      c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\cuda_runtime_api.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_functions.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:   c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_functions.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\builtin_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\device_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\driver_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\surface_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\texture_types.h
+         Note: including file:     c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\host_defines.h
+         Note: including file:    c:\program files\nvidia gpu computing toolkit\cuda\v4.1\include\vector_types.h
+         Note: including file: C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\windows.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\sdkddkver.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\excpt.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdarg.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\windef.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnt.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\ctype.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\sal_supp.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\specstrings_supp.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings_strict.h
+         Note: including file:      C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\specstrings_undef.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\driverspecs.h
+         Note: including file:      c:\program files (x86)\microsoft sdks\windows\v7.0a\include\sdv_driverspecs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\kernelspecs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\basetsd.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\guiddef.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\string.h
+         Note: including file:      c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack4.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack2.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack2.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\pshpack8.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ktmtypes.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winbase.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winerror.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wingdi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winuser.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\tvout.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnls.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wincon.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winver.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\verrsrc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winreg.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\reason.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winnetwk.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wnnc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\cderr.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\dde.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ddeml.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\dlgs.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\lzexpand.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\mmsystem.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\nb30.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpc.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcdce.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcdcep.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnsi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnterr.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcasync.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\shellapi.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winperf.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winsock.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\inaddr.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wincrypt.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\bcrypt.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ncrypt.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\bcrypt.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winefs.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winscard.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wtypes.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\rpcndr.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnsip.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcsal.h
+         Note: including file:     C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    c:\program files (x86)\microsoft sdks\windows\v7.0a\include\guiddef.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winioctl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   c:\program files (x86)\microsoft sdks\windows\v7.0a\include\winsmcrd.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winspool.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\prsht.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack4.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ole2.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\objbase.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:    c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdlib.h
+         Note: including file:     c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\unknwn.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\objidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\guiddef.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\cguid.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\urlmon.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\oleidl.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\servprov.h
+         Note: including file:     c:\program files (x86)\microsoft sdks\windows\v7.0a\include\msxml.h
+         Note: including file:      c:\program files (x86)\microsoft sdks\windows\v7.0a\include\oaidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\propidl.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\oleauto.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
+         Note: including file:    C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\commdlg.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\prsht.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack1.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\stralign.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winsvc.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\mcx.h
+         Note: including file:  C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\imm.h
+         Note: including file:   C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\ime_cmodes.h
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdio.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\swprintf.inl
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\cmath
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\yvals.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\use_ansi.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\math.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file: c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\ctime
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\time.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\wtime.inl
+         Note: including file:   c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\time.inl
+         Note: including file: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+         Note: including file: c:\users\peter\gpupathtracer\gpupathtracer\gpupathtracer\cutil_math.h
+         Note: including file:  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\include\cuda_runtime.h
+         Note: including file:  c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\math.h
+     1>path_tracer.cpp(92): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>path_tracer.cpp(92): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>path_tracer.cpp(92): warning C4305: 'argument' : truncation from 'double' to 'float'
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Release\GPUPathTracer.exe.embed.manifest.res" Release\GPUPathTracer_manifest.rc 
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.exe" /INCREMENTAL /NOLOGO /LIBPATH:../freeglut/lib /LIBPATH:../glew/lib /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\lib\Win32" /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\lib\Win32" freeglut.lib glew32.lib cudart.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\GPUPathTracer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.lib" /MACHINE:X86 Release\path_tracer.cu.obj
+         Release\kernel.cu.obj
+         Release\GPUPathTracer.exe.embed.manifest.res
+         Release\display.obj
+         Release\path_tracer.obj
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
+         Generating code
+         Finished generating code
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Release\GPUPathTracer.exe.embed.manifest" /manifest Release\GPUPathTracer.exe.intermediate.manifest
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Release\GPUPathTracer.exe.embed.manifest.res" Release\GPUPathTracer_manifest.rc 
+       LinkEmbedManifest:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.exe" /INCREMENTAL /NOLOGO /LIBPATH:../freeglut/lib /LIBPATH:../glew/lib /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\lib\Win32" /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\lib\Win32" freeglut.lib glew32.lib cudart.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\GPUPathTracer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.lib" /MACHINE:X86 Release\path_tracer.cu.obj
+         Release\kernel.cu.obj
+         Release\GPUPathTracer.exe.embed.manifest.res
+         Release\display.obj
+         Release\path_tracer.obj
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
+         Generating code
+         Finished generating code
+         GPUPathTracer.vcxproj -> C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\GPUPathTracer.exe
+       PostBuildEvent:
+         echo copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\cudart*.dll" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\"
+         copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\cudart*.dll" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\"
+         :VCEnd
+         copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\cudart*.dll" "C:\Users\Peter\GPUPathTracer\GPUPathTracer\Release\"
+         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\cudart32_41_28.dll
+         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.1\bin\cudart64_41_28.dll
+                 2 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file "Release\GPUPathTracer.unsuccessfulbuild".
+         Touching "Release\GPUPathTracer.lastbuildstate".
+     1>Done Building Project "C:\Users\Peter\GPUPathTracer\GPUPathTracer\GPUPathTracer\GPUPathTracer.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.79

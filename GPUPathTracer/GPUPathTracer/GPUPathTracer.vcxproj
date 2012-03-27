@@ -48,7 +48,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
-      <ShowIncludes>true</ShowIncludes>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -68,7 +68,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
-      <ShowIncludes>true</ShowIncludes>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,15 +84,22 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="path_tracer.cu" />
-    <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="path_tracer_kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="color.h" />
+    <ClInclude Include="cuda_safe_call.h" />
     <ClInclude Include="cutil_math.h" />
+    <ClInclude Include="image.h" />
     <ClInclude Include="path_tracer.h" />
+    <ClInclude Include="path_tracer_kernel.h" />
+    <ClInclude Include="ray.h" />
+    <ClInclude Include="sphere.h" />
+    <ClInclude Include="windows_include.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="display.cpp" />
+    <ClCompile Include="image.cpp" />
     <ClCompile Include="path_tracer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

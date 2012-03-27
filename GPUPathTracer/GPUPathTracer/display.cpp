@@ -1,8 +1,4 @@
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
+#include "windows_include.h"
 
 // includes, system
 #include <stdio.h>
@@ -24,6 +20,7 @@
 #endif
 
 #include "path_tracer.h"
+#include "image.h"
 
 
 
@@ -147,7 +144,7 @@ bool initGL()
 ////////////////////////////////////////////////////////////////////////////////
 void display()
 {
-    //pathTracer.render();
+    pathTracer.render();
 
 
 

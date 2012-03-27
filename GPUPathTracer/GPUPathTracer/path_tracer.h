@@ -1,28 +1,22 @@
-#pragma once
+#ifndef PATH_TRACER_H
+#define PATH_TRACER_H
 
 #include <cuda_runtime.h>
+struct Image;
+struct Sphere;
+struct Ray;
 
 class PathTracer {
 
 private:
 
-	int imageWidth;
-	int imageHeight;
-	int numPixels;
-
-	float3* image;
+	Image* image;
 
 	int numSpheres;
 
-	float3* spherePositions;
-	float3* sphereRadii;
-	float3* sphereDiffuseColors;
-	float3* sphereEmittedColors;
+	Sphere* spheres;
 	
-	float3* rayOrigins;
-	float3* rayDirections;
-
-	float3* currentImage;
+	Ray* rays;
 
 	void createDeviceData();
 	void deleteDeviceData();
@@ -35,8 +29,9 @@ public:
 	PathTracer();
 	~PathTracer();
 
-	void setImageSize(int _imageWidth, int _imageHeight);
-	float3* render();
+	Image* render();
 
 
 };
+
+#endif // PATH_TRACER_H

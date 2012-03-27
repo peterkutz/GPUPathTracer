@@ -1,10 +1,10 @@
 #include "path_tracer.h"
 
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
+#include "image.h"
+#include "sphere.h"
+#include "ray.h"
+
+#include "windows_include.h"
 
 // System:
 #include <stdio.h>
@@ -15,26 +15,15 @@
 #include <cuda_runtime.h>
 #include "cutil_math.h"
 
-#  define CUDA_SAFE_CALL( call) {                                    \
-cudaError err = call;                                                    \
-if( cudaSuccess != err) {                                                \
-    fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
-            __FILE__, __LINE__, cudaGetErrorString( err) );              \
-    exit(EXIT_FAILURE);                                                  \
-} }
+#include "cuda_safe_call.h"
 
-
-
-
-// Necessary forward declaration:
-extern "C"
-void launch_kernel(int numSpheres, float3* spherePositions, float3* sphereRadii, float3* sphereDiffuseColors, float3* sphereEmittedColors, int numPixels, float3* rayOrigins, float3* rayDirections);
-
+#include "path_tracer_kernel.h"
 
 
 
 PathTracer::PathTracer() {
 
+	image = newImage(480, 480);
 	setUpScene();
 	createDeviceData();
 
@@ -44,24 +33,13 @@ PathTracer::PathTracer() {
 PathTracer::~PathTracer() {
 
 	deleteDeviceData();
+	deleteImage(image);
 
 }
 
-
-void PathTracer::setImageSize(int _imageWidth, int _imageHeight) {
-
-	imageWidth = _imageWidth;
-	imageHeight = _imageHeight;
-
-	numPixels = imageWidth * imageHeight;
-
-	currentImage = new float3[numPixels];
-
-}
-
-float3* PathTracer::render() {
+Image* PathTracer::render() {
 	runCuda();
-	return currentImage;
+	return image;
 }
 
 void PathTracer::setUpScene() {
@@ -71,49 +49,43 @@ void PathTracer::setUpScene() {
 }
 
 void PathTracer::runCuda() {
-	launch_kernel(numSpheres, spherePositions, sphereRadii, sphereDiffuseColors, sphereEmittedColors, numPixels, rayOrigins, rayDirections);
+	launch_kernel(numSpheres, spheres, image, rays);
 }
 
 void PathTracer::createDeviceData() {
 
     // Initialize data:
 	
-	float3* tempSpherePositions = (float3*)malloc(numSpheres * sizeof(float3));
-	float* tempSphereRadii = (float*)malloc(numSpheres * sizeof(float));
-	float3* tempSphereDiffuseColors = (float3*)malloc(numSpheres * sizeof(float3));
-	float3* tempSphereEmittedColors = (float3*)malloc(numSpheres * sizeof(float3));
+	Sphere* tempSpheres = new Sphere[numSpheres];
 
-	float3* tempRayOrigins = (float3*)malloc(numPixels * sizeof(float3));
-	float3* tempRayDirections = (float3*)malloc(numPixels * sizeof(float3));
+	Ray* tempRays = new Ray[image->numPixels];
 
 	for (int i = 0; i < numSpheres; i++) {
-		tempSpherePositions[i] = make_float3(0, 0, 0);
-		tempSphereRadii[i] = 3;
-		tempSphereDiffuseColors[i] = make_float3(0.9, 0.8, 0.1);
-		tempSphereEmittedColors[i] = make_float3(0.5, 0.5, 0.5);
+		tempSpheres[i].position = make_float3(0, 0, 0);
+		tempSpheres[i].radius = 2;
 	}
 
-    for (int i = 0; i < imageHeight; ++i) {
-		for (int j = 0; j < imageWidth; ++j) {
-			tempRayOrigins[i * imageWidth + j] = make_float3(0, 0, -20);
-			tempRayDirections[i * imageWidth + j] = make_float3(0, 0, -20);
+    for (int i = 0; i < image->height; ++i) {
+		for (int j = 0; j < image->width; ++j) {
+			// TODO: Make a function for pixel array index.
+			tempRays[i * image->width + j].origin = make_float3(0, 0, -20);
+			tempRays[i * image->height + j].direction = make_float3(0, 0, -1);
 		}
     }
 
     // Copy to GPU:
-	CUDA_SAFE_CALL( cudaMalloc( (void**)&rayOrigins, numPixels * sizeof(float3) ) );
-    CUDA_SAFE_CALL( cudaMemcpy( rayOrigins, tempRayOrigins, numPixels * sizeof(float3), cudaMemcpyHostToDevice) );
+	CUDA_SAFE_CALL( cudaMalloc( (void**)&spheres, numSpheres * sizeof(Sphere) ) );
+	CUDA_SAFE_CALL( cudaMalloc( (void**)&rays, image->numPixels * sizeof(Ray) ) );
+    CUDA_SAFE_CALL( cudaMemcpy( spheres, tempSpheres, numSpheres * sizeof(Sphere), cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy( rays, tempRays, image->numPixels * sizeof(Ray), cudaMemcpyHostToDevice) );
 
-    free(tempRayOrigins);
+    delete [] tempSpheres;
+	delete [] tempRays;
 }
 
 void PathTracer::deleteDeviceData() {
-    CUDA_SAFE_CALL( cudaFree( spherePositions ) );
-    CUDA_SAFE_CALL( cudaFree( sphereRadii ) );
-	CUDA_SAFE_CALL( cudaFree( sphereDiffuseColors ) );
-	CUDA_SAFE_CALL( cudaFree( sphereEmittedColors ) );
-	CUDA_SAFE_CALL( cudaFree( rayOrigins ) );
-	CUDA_SAFE_CALL( cudaFree( rayDirections ) );
+    CUDA_SAFE_CALL( cudaFree( spheres ) );
+    CUDA_SAFE_CALL( cudaFree( rays ) );
 
 }
 
