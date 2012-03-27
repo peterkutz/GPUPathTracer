@@ -21,3 +21,10 @@ void deleteImage(Image* image) {
 
 }
 
+int pixelIndexRowColumn(Image* image, int i, int j) {
+	return i * image->width + j;
+}
+
+Color& getPixelRowColumn(Image* image, int i, int j) {
+	return image->pixels[pixelIndexRowColumn(image, i, j)];
+}

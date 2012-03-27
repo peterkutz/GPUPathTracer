@@ -38,7 +38,10 @@ PathTracer::~PathTracer() {
 }
 
 Image* PathTracer::render() {
-	runCuda();
+	Image* singlePassImage = newImage(image->width, image->height);
+	launch_kernel(numSpheres, spheres, singlePassImage, rays);
+	memcpy(image->pixels, singlePassImage->pixels, image->numPixels * sizeof(Color)); // TEMP TEST.
+	deleteImage(singlePassImage);
 	return image;
 }
 
@@ -46,10 +49,6 @@ void PathTracer::setUpScene() {
 
 	numSpheres = 1;
 
-}
-
-void PathTracer::runCuda() {
-	launch_kernel(numSpheres, spheres, image, rays);
 }
 
 void PathTracer::createDeviceData() {

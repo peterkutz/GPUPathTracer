@@ -13,9 +13,11 @@ struct Image {
 };
 
 
-// Forward declarations:
+
 Image* newImage(int width, int height);
 void deleteImage(Image* image);
+int pixelIndexRowColumn(Image* image, int i, int j);
+Color& getPixelRowColumn(Image* image, int i, int j);
 
 
 #endif // IMAGE_H

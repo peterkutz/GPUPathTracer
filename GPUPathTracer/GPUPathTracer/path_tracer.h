@@ -21,8 +21,6 @@ private:
 	void createDeviceData();
 	void deleteDeviceData();
 
-	void runCuda();
-
 	void setUpScene();
 
 public:

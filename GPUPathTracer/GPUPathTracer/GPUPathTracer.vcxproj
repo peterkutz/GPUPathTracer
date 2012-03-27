@@ -87,6 +87,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="path_tracer_kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="basic_math.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="cuda_safe_call.h" />
     <ClInclude Include="cutil_math.h" />
@@ -98,6 +99,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="windows_include.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="basic_math.cpp" />
+    <ClCompile Include="color.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="path_tracer.cpp" />

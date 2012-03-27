@@ -67,16 +67,15 @@ void motion(int x, int y);
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-int main( int argc, char** argv)
-{
+int main( int argc, char** argv) {
+
     initializeThings( argc, argv);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize things.
 ////////////////////////////////////////////////////////////////////////////////
-void initializeThings( int argc, char** argv)
-{
+void initializeThings( int argc, char** argv) {
 
 
     // Create GL context
@@ -99,6 +98,24 @@ void initializeThings( int argc, char** argv)
     glutMouseFunc( mouse);
     glutMotionFunc( motion);
 
+
+
+
+
+	// Create a texture for displaying the render:
+	// TODO: Move to function.
+	glBindTexture(GL_TEXTURE_2D, 13);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+
+
+
+
     // start rendering mainloop
     glutMainLoop();
 }
@@ -106,8 +123,8 @@ void initializeThings( int argc, char** argv)
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize GL
 ////////////////////////////////////////////////////////////////////////////////
-bool initGL()
-{
+bool initGL() {
+
     // initialize necessary OpenGL extensions
     glewInit();
     if (! glewIsSupported( "GL_VERSION_2_0 " 
@@ -142,9 +159,10 @@ bool initGL()
 ////////////////////////////////////////////////////////////////////////////////
 // Display callback
 ////////////////////////////////////////////////////////////////////////////////
-void display()
-{
-    pathTracer.render();
+void display() {
+
+
+    Image* imageReference = pathTracer.render();
 
 
 
@@ -168,39 +186,32 @@ void display()
 
 
 
-
-	// Create a texture:
-	glBindTexture(GL_TEXTURE_2D, 13);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	int imageWidth = 480;
-	int imageHeight = 480;
-	char3* imageData = new char3[imageWidth * imageHeight];
+	// Update the texture:
+	int imageWidth = imageReference->width;
+	int imageHeight = imageReference->height;
+	uchar3* imageData = new uchar3[imageWidth * imageHeight];
 	for (int i = 0; i < imageHeight; i++) {
 		for (int j = 0; j < imageWidth; j++) {
-			imageData[i * imageWidth + j].x = std::pow((double)i / double(imageHeight - 1), 1.0/2.2) * 255;
-			imageData[i * imageWidth + j].y = std::pow((double)i / double(imageHeight - 1), 1.0/2.2) * 255;
-			imageData[i * imageWidth + j].z = std::pow((double)i / double(imageHeight - 1), 1.0/2.2) * 255;
+			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(getPixelRowColumn(imageReference, i, j));
 		}
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+	delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
+
+
 
 
 	// Show the texture:
 	glBindTexture (GL_TEXTURE_2D, 13);
 	glBegin (GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
-	glVertex3f (0.0, 0.0, 0.0);
-	glTexCoord2f (1.0, 0.0);
-	glVertex3f (1.0, 0.0, 0.0);
-	glTexCoord2f (1.0, 1.0);
-	glVertex3f (1.0, 1.0, 0.0);
-	glTexCoord2f (0.0, 1.0);
 	glVertex3f (0.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 0.0, 0.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 0.0, 0.0);
 	glEnd ();
 
 
@@ -227,8 +238,8 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/)
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse event handlers
 ////////////////////////////////////////////////////////////////////////////////
-void mouse(int button, int state, int x, int y)
-{
+void mouse(int button, int state, int x, int y) {
+
     if (state == GLUT_DOWN) {
         mouse_buttons |= 1<<button;
     } else if (state == GLUT_UP) {
@@ -240,8 +251,8 @@ void mouse(int button, int state, int x, int y)
     glutPostRedisplay();
 }
 
-void motion(int x, int y)
-{
+void motion(int x, int y) {
+
     float dx, dy;
     dx = (float)(x - mouse_old_x);
     dy = (float)(y - mouse_old_y);
