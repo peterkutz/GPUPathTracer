@@ -23,7 +23,7 @@
 
 PathTracer::PathTracer() {
 
-	image = newImage(480, 480);
+	image = newImage(512, 512); // TODO: Don't hard-code this.
 	setUpScene();
 	createDeviceData();
 

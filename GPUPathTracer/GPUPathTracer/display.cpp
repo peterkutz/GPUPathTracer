@@ -31,8 +31,8 @@
 // constants
 
 // window
-int window_width = 512;
-int window_height = 512;
+int window_width = 512; // Currently not related to render width.
+int window_height = 512; // Currently not related to render height.
 
 // mouse controls
 int mouse_old_x, mouse_old_y;
@@ -99,23 +99,6 @@ void initializeThings( int argc, char** argv) {
     glutMotionFunc( motion);
 
 
-
-
-
-	// Create a texture for displaying the render:
-	// TODO: Move to function.
-	glBindTexture(GL_TEXTURE_2D, 13);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-
-
-
-
     // start rendering mainloop
     glutMainLoop();
 }
@@ -142,16 +125,34 @@ bool initGL() {
     // viewport
     glViewport( 0, 0, window_width, window_height);
 
-    // projection
-    glMatrixMode( GL_PROJECTION);
-    glLoadIdentity();
-    
-    // TODO (maybe) :: depending on your parameters, you may need to change
-    // near and far view distances (1, 500), to better see the simulation.
-    // If you do this, probably also change translate_z initial value at top.
-    gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 1, 500.0);
+    // Set up an orthographic view:
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0,1,0,1,-1,1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
 
-    //CUT_CHECK_ERROR_GL();
+
+	// Create a texture for displaying the render:
+	// TODO: Move to a function.
+	glBindTexture(GL_TEXTURE_2D, 13);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// Use nearest-neighbor point sampling instead of linear interpolation:
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	// Enable textures:
+	glEnable(GL_TEXTURE_2D);
+
+
+    //CUT_CHECK_ERROR_GL(); // ???
 
     return true;
 }
@@ -167,21 +168,6 @@ void display() {
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-	// Set up an orthographic view:
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0,1,0,1,-1,1);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	// Enable textures:
-	glEnable(GL_TEXTURE_2D);
 
 
 
