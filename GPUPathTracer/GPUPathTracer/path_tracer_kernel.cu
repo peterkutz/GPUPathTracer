@@ -25,6 +25,18 @@
 
 #define BLOCK_SIZE 256 // Number of threads in a block.
 
+__host__ __device__
+unsigned int hash(unsigned int a)
+{
+    a = (a+0x7ed55d16) + (a<<12);
+    a = (a^0xc761c23c) ^ (a>>19);
+    a = (a+0x165667b1) + (a<<5);
+    a = (a+0xd3a2646c) ^ (a<<9);
+    a = (a+0xfd7046c5) + (a<<3);
+    a = (a^0xb55a4f09) ^ (a>>16);
+    return a;
+}
+
 //E is eye, C is view, U is up
 __global__ void raycast_from_camera_kernal(float3 E, float3 C, float3 U, float2 fov, float2 resolution, float3* accumulatedColors, int numPixels, Ray* rays){
 	const float PI =3.1415926535897932384626422832795028841971;
@@ -65,7 +77,7 @@ __global__ void raycast_from_camera_kernal(float3 E, float3 C, float3 U, float2 
 	}
 }
 
-__global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, float3* notAbsorbedColors, float3* accumulatedColors, curandState* globalCurandStates, unsigned long seed) {
+__global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seed) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
 
@@ -103,8 +115,6 @@ void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int
 
 	// Set up random number generator:
 	// TODO: Only do this once, not every frame!
-	curandState* deviceCurandStates;
-    CUDA_SAFE_CALL( cudaMalloc((void**)&deviceCurandStates, image->numPixels * sizeof(curandState)) );
 
 	Color* tempNotAbsorbedColors = (Color*)malloc(image->numPixels * sizeof(Color));
 	Color* tempAccumulatedColors = (Color*)malloc(image->numPixels * sizeof(Color));
@@ -122,13 +132,12 @@ void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int
 		raycast_from_camera_kernal<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, accumulatedColors, image->numPixels, rays);
 	}
 
-	trace_ray_kernel<<<blocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, image->numPixels, rays, notAbsorbedColors, accumulatedColors, deviceCurandStates, counter);
+	trace_ray_kernel<<<blocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, image->numPixels, rays, notAbsorbedColors, accumulatedColors, counter);
 
 	// Copy the accumulated colors from the device into the host image:
 	CUDA_SAFE_CALL( cudaMemcpy( image->pixels, accumulatedColors, image->numPixels * sizeof(Color), cudaMemcpyDeviceToHost) );
 
 	CUDA_SAFE_CALL( cudaFree( notAbsorbedColors ) );
 	CUDA_SAFE_CALL( cudaFree( accumulatedColors ) );
-	CUDA_SAFE_CALL( cudaFree( deviceCurandStates ) );
 
 }
