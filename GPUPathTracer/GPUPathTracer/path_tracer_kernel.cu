@@ -77,6 +77,51 @@ __global__ void raycast_from_camera_kernal(float3 E, float3 C, float3 U, float2 
 	}
 }
 
+__host__ __device__
+//assumes that ray is already transformed into sphere's object space, returns -1 if no intersection
+float sphereIntersectionTest(Ray* r, float3& normal, Sphere* s){
+
+	normal = make_float3(0,0,0);
+
+	float radius = .5;
+
+	float A = dot(r->direction, r->direction);
+	float B = 2.0f*dot(r->direction, r->origin);
+	float C = dot(r->direction, r->origin) - (radius*radius);
+
+	float disc = (B*B)-(4*A*C);
+	if(disc<0){
+		return -1;
+	}
+
+	float distSqrt = sqrtf(disc);
+	float q;
+	if(B<0){
+        q = (-B - distSqrt)/2.0;
+    }else{
+        q = (-B + distSqrt)/2.0;
+	}
+
+	float t0 = q/A;
+    float t1 = C/q;
+
+	if(t0>t1){
+		float temp = t0;
+		t0 = t1;
+		t1 = temp;
+    }
+	if(t1<0){
+		return -1;
+    }
+	if(t0<0){
+		normal = r->origin + t1*r->direction;
+		return t1;
+	}else{
+		normal = r->origin + t0*r->direction;
+		return t0;
+	}
+}
+
 __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seed) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
