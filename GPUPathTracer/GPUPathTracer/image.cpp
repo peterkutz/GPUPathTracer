@@ -1,5 +1,5 @@
 #include "image.h"
-
+#include <iostream>
 
 Image* newImage(int width, int height) {
 
@@ -27,4 +27,11 @@ int pixelIndexRowColumn(Image* image, int i, int j) {
 
 Color& getPixelRowColumn(Image* image, int i, int j) {
 	return image->pixels[pixelIndexRowColumn(image, i, j)];
+}
+
+void setPixelRowColumn(Image* image, int i, int j, Color c) {
+	image->pixels[pixelIndexRowColumn(image, i, j)].x = c.x;
+	image->pixels[pixelIndexRowColumn(image, i, j)].y = c.y;
+	image->pixels[pixelIndexRowColumn(image, i, j)].z = c.z;
+	//std::cout << c.x << " " << c.y << " " << c.z << std::endl;
 }

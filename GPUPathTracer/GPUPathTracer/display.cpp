@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <ctime>
+#include <iostream>
 
 // includes, GL
 #include <GL/glew.h>
@@ -75,8 +76,15 @@ int main( int argc, char** argv) {
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize things.
 ////////////////////////////////////////////////////////////////////////////////
+
+uchar3* imageData;
+
 void initializeThings( int argc, char** argv) {
 
+	Image* imageReference = pathTracer.render(); 
+	int imageWidth = imageReference->width;
+	int imageHeight = imageReference->height;
+	imageData = new uchar3[imageWidth * imageHeight];
 
     // Create GL context
     glutInit( &argc, argv);
@@ -157,33 +165,34 @@ bool initGL() {
     return true;
 }
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Display callback
 ////////////////////////////////////////////////////////////////////////////////
 void display() {
 
-
-    Image* imageReference = pathTracer.render();
-
-
+	Image* imageReference = pathTracer.render(); 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
 
 	// Update the texture:
 	int imageWidth = imageReference->width;
 	int imageHeight = imageReference->height;
-	uchar3* imageData = new uchar3[imageWidth * imageHeight];
+	//uchar3* imageData = new uchar3[imageWidth * imageHeight];
 	for (int i = 0; i < imageHeight; i++) {
 		for (int j = 0; j < imageWidth; j++) {
+			
+			float3 l = imageData[pixelIndexRowColumn(imageReference, i, j)] ;
+
 			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(getPixelRowColumn(imageReference, i, j));
+
+
+			
 		}
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
 	delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
-
 
 
 

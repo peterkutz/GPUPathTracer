@@ -18,6 +18,6 @@ Image* newImage(int width, int height);
 void deleteImage(Image* image);
 int pixelIndexRowColumn(Image* image, int i, int j);
 Color& getPixelRowColumn(Image* image, int i, int j);
-
+void setPixelRowColumn(Image* image, int i, int j, Color c);
 
 #endif // IMAGE_H
