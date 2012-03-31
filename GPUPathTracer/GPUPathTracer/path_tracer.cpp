@@ -26,7 +26,7 @@ PathTracer::PathTracer() {
 	image = newImage(512, 512); // TODO: Don't hard-code this.
 	setUpScene();
 	createDeviceData();
-
+	counter = 0;
 }
 
 
@@ -39,7 +39,8 @@ PathTracer::~PathTracer() {
 
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
-	launch_kernel(numSpheres, spheres, singlePassImage, rays);
+	launch_kernel(numSpheres, spheres, singlePassImage, rays, counter);
+	counter++;
 	memcpy(image->pixels, singlePassImage->pixels, image->numPixels * sizeof(Color)); // TEMP TEST.
 	deleteImage(singlePassImage);
 	return image;

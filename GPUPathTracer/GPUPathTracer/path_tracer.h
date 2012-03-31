@@ -23,6 +23,8 @@ private:
 
 	void setUpScene();
 
+	int counter;
+
 public:
 	PathTracer();
 	~PathTracer();
