@@ -3,6 +3,7 @@
 #include "image.h"
 #include "sphere.h"
 #include "ray.h"
+#include "camera.h"
 
 #include "windows_include.h"
 
@@ -10,6 +11,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <ctime>
+#include <iostream>
 
 // CUDA:
 #include <cuda_runtime.h>
@@ -23,6 +25,9 @@
 
 PathTracer::PathTracer() {
 
+	// TODO: better way to set up camera/make it not hard-coded
+	rendercam = new Camera;
+	setupCamera(rendercam);
 	image = newImage(512, 512); // TODO: Don't hard-code this.
 	setUpScene();
 	createDeviceData();
@@ -37,9 +42,18 @@ PathTracer::~PathTracer() {
 
 }
 
+void PathTracer::setupCamera(Camera* cam){
+	// TODO: better way to set up camera/make it not hard-coded
+	cam->position = make_float3(0.0, 4.0, 4.8);
+	cam->view = make_float3(0.0, 0.0, -1.0);
+	cam->up = make_float3(0.0, 1.0, 0.0);
+	cam->fov = make_float2(45,45);
+	cam->resolution = make_float2(512,512);
+}
+
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
-	launch_kernel(numSpheres, spheres, singlePassImage, rays, counter);
+	launch_kernel(numSpheres, spheres, singlePassImage, rays, counter, rendercam);
 	counter++;
 	memcpy(image->pixels, singlePassImage->pixels, image->numPixels * sizeof(Color)); // TEMP TEST.
 	deleteImage(singlePassImage);

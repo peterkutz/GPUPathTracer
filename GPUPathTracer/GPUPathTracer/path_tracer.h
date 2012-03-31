@@ -5,6 +5,7 @@
 struct Image;
 struct Sphere;
 struct Ray;
+struct Camera;
 
 class PathTracer {
 
@@ -18,6 +19,8 @@ private:
 	
 	Ray* rays;
 
+	Camera* rendercam;
+
 	void createDeviceData();
 	void deleteDeviceData();
 
@@ -30,7 +33,7 @@ public:
 	~PathTracer();
 
 	Image* render();
-
+	void setupCamera(Camera* cam);
 
 };
 

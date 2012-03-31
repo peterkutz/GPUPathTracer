@@ -88,6 +88,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic_math.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="cuda_safe_call.h" />
     <ClInclude Include="cutil_math.h" />

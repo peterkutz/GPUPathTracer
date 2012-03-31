@@ -4,7 +4,7 @@
 
 // Necessary forward declaration:
 extern "C"
-void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int counter);
+void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int counter, Camera* rendercam);
 
 
 #endif // PATH_TRACER_KERNEL_H
