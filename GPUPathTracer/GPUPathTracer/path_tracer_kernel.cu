@@ -105,8 +105,6 @@ void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int
 	// TODO: Only do this once, not every frame!
 	curandState* deviceCurandStates;
     CUDA_SAFE_CALL( cudaMalloc((void**)&deviceCurandStates, image->numPixels * sizeof(curandState)) );
-   
-	//set_up_random_number_generator_kernel<<<blocksPerGrid, threadsPerBlock>>>(deviceCurandStates, time(NULL), image->numPixels);
 
 	Color* tempNotAbsorbedColors = (Color*)malloc(image->numPixels * sizeof(Color));
 	Color* tempAccumulatedColors = (Color*)malloc(image->numPixels * sizeof(Color));
