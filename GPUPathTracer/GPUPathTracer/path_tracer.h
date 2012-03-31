@@ -26,7 +26,7 @@ private:
 
 	void setUpScene();
 
-	int counter;
+	
 
 public:
 	PathTracer();
@@ -34,7 +34,7 @@ public:
 
 	Image* render();
 	void setupCamera(Camera* cam);
-
+	int counter;
 };
 
 #endif // PATH_TRACER_H

@@ -183,15 +183,16 @@ void display() {
 	for (int i = 0; i < imageHeight; i++) {
 		for (int j = 0; j < imageWidth; j++) {
 			
-			Color c = getPixelRowColumn(imageReference, i, j);
-			c.x = c.x + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].x;
-			c.y = c.y + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].y;
-			c.z = c.z + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].z;
-			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(c);
+			float3 l = imageData[pixelIndexRowColumn(imageReference, i, j)] ;
+
+			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(getPixelRowColumn(imageReference, i, j));
+
+
+			
 		}
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-	//delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
+	delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
 
 
 
@@ -208,24 +209,11 @@ void display() {
 	glVertex3f (0.0, 0.0, 0.0);
 	glEnd ();
 
-	//write the iteration count to the display
-	glPushAttrib(GL_LIGHTING_BIT);
-		glDisable(GL_LIGHTING);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluOrtho2D(0.0, 1.0, 0.0, 1.0);
 
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glRasterPos2f(.01, 0.01); 
-     
-		char info[1024];
-		sprintf(info, "Iterations: %u", pathTracer.counter);
-		for (unsigned int i = 0; i < strlen(info); i++){
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
-		}
-	glPopAttrib();
+
+
+
+
 
     glutSwapBuffers();
     glutPostRedisplay();

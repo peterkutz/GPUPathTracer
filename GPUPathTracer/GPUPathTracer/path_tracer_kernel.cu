@@ -98,9 +98,12 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 
 		//accumulatedColors[pixelIndex] = make_float3((float)pixelIndex / (float)numPixels, (float)pixelIndex / (float)numPixels / 2.0, (float)pixelIndex / (float)numPixels / 4.0);
 		//accumulatedColors[pixelIndex] = make_float3(randomFloat, randomFloat, randomFloat);
-		//accumulatedColors[pixelIndex] = rays[pixelIndex].direction;
 
-		accumulatedColors[pixelIndex] = make_float3(randomFloat, randomFloat, randomFloat) +  rays[pixelIndex].direction;
+		if(abs(randomFloat-1)<.1){
+			accumulatedColors[pixelIndex] = rays[pixelIndex].direction;
+		}else{
+			accumulatedColors[pixelIndex] = make_float3(0,0,0);
+		}
 	}
 
 }
