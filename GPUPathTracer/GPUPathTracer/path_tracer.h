@@ -26,15 +26,13 @@ private:
 
 	void setUpScene();
 
-	
-
 public:
 	PathTracer();
 	~PathTracer();
 
 	Image* render();
-	void setupCamera(Camera* cam);
-	int counter;
+	void setUpCamera(Camera* cam);
+
 };
 
 #endif // PATH_TRACER_H

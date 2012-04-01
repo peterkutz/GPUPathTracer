@@ -25,13 +25,16 @@
 
 PathTracer::PathTracer() {
 
+	image = newImage(512, 512); // TODO: Don't hard-code this.
+
 	// TODO: better way to set up camera/make it not hard-coded
 	rendercam = new Camera;
-	setupCamera(rendercam);
-	image = newImage(512, 512); // TODO: Don't hard-code this.
+	setUpCamera(rendercam);
+
 	setUpScene();
+
 	createDeviceData();
-	counter = 0;
+
 }
 
 
@@ -42,21 +45,28 @@ PathTracer::~PathTracer() {
 
 }
 
-void PathTracer::setupCamera(Camera* cam){
+void PathTracer::setUpCamera(Camera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
 	cam->position = make_float3(0.0, 4.0, 4.8);
 	cam->view = make_float3(0.0, 0.0, -1.0);
 	cam->up = make_float3(0.0, 1.0, 0.0);
 	cam->fov = make_float2(45,45);
-	cam->resolution = make_float2(512,512);
+	cam->resolution = make_float2(image->width, image->height); // Setting to image size for now, to avoid duplicate definition that we have to manually keep in sync.
 }
 
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
-	launch_kernel(numSpheres, spheres, singlePassImage, rays, counter, rendercam);
-	counter++;
-	memcpy(image->pixels, singlePassImage->pixels, image->numPixels * sizeof(Color)); // TEMP TEST.
+
+	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, rendercam);
+
+	// TODO: Make a function for this (or a method---maybe Image can just be a class).
+	for (int i = 0; i < image->numPixels; i++) {
+		image->pixels[i] += singlePassImage->pixels[i];
+	}
+	image->passCounter++;
+
 	deleteImage(singlePassImage);
+
 	return image;
 }
 
@@ -79,6 +89,7 @@ void PathTracer::createDeviceData() {
 		tempSpheres[i].radius = 2;
 	}
 
+	// TRASH:
     for (int i = 0; i < image->height; ++i) {
 		for (int j = 0; j < image->width; ++j) {
 			// TODO: Make a function for pixel array index.
@@ -102,4 +113,5 @@ void PathTracer::deleteDeviceData() {
     CUDA_SAFE_CALL( cudaFree( rays ) );
 
 }
+
 

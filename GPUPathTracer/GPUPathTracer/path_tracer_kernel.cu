@@ -38,7 +38,7 @@ unsigned int hash(unsigned int a)
 }
 
 //E is eye, C is view, U is up
-__global__ void raycast_from_camera_kernal(float3 E, float3 C, float3 U, float2 fov, float2 resolution, float3* accumulatedColors, int numPixels, Ray* rays){
+__global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 fov, float2 resolution, float3* accumulatedColors, int numPixels, Ray* rays){
 	const float PI =3.1415926535897932384626422832795028841971;
 
 	int bx = blockIdx.x;
@@ -79,45 +79,59 @@ __global__ void raycast_from_camera_kernal(float3 E, float3 C, float3 U, float2 
 
 __host__ __device__
 //assumes that ray is already transformed into sphere's object space, returns -1 if no intersection
-float sphereIntersectionTest(Ray* r, float3& normal, Sphere* s){
+float sphereIntersectionTest(const Ray & ray, const Sphere & sphere, float3 & intersectionPoint, float3 & normal) {
+
+	// http://en.wikipedia.org/wiki/Discriminant
+	// http://mathworld.wolfram.com/QuadraticFormula.html
+	// http://en.wikipedia.org/wiki/Ray_tracing_%28graphics%29
 
 	normal = make_float3(0,0,0);
 
-	float radius = .5;
+	Ray transformedRay;
+	transformedRay.origin = ray.origin - sphere.position;
+	transformedRay.direction = ray.direction;
 
-	float A = dot(r->direction, r->direction);
-	float B = 2.0f*dot(r->direction, r->origin);
-	float C = dot(r->direction, r->origin) - (radius*radius);
+	float A = dot(transformedRay.direction, transformedRay.direction);
+	float B = 2.0f*dot(transformedRay.direction, transformedRay.origin);
+	float C = dot(transformedRay.direction, transformedRay.origin) - (sphere.radius*sphere.radius);
 
-	float disc = (B*B)-(4*A*C);
-	if(disc<0){
+	float discriminant = (B*B)-(4*A*C);
+	if(discriminant<0){
 		return -1;
 	}
 
-	float distSqrt = sqrtf(disc);
+	float discriminantSqrt = sqrtf(discriminant);
 	float q;
 	if(B<0){
-        q = (-B - distSqrt)/2.0;
+        q = (-B - discriminantSqrt) * 0.5; // Changed from / 2.0 to * 0.5 for slightly better performance, although maybe the compiler would do this automatically.
     }else{
-        q = (-B + distSqrt)/2.0;
+        q = (-B + discriminantSqrt) * 0.5;
 	}
 
+	
 	float t0 = q/A;
     float t1 = C/q;
 
+	// Make t0 the first intersection distance along the ray, and t1 the second:
 	if(t0>t1){
+		// Swap t0 and t1:
 		float temp = t0;
 		t0 = t1;
 		t1 = temp;
     }
+
 	if(t1<0){
+		// Both distances are negative. 
 		return -1;
     }
+
 	if(t0<0){
-		normal = r->origin + t1*r->direction;
+		intersectionPoint = ray.origin + t1*ray.direction;
+		normal = normalize(intersectionPoint - sphere.position);
 		return t1;
 	}else{
-		normal = r->origin + t0*r->direction;
+		intersectionPoint = ray.origin + t0*ray.direction;
+		normal = normalize(intersectionPoint - sphere.position);
 		return t0;
 	}
 }
@@ -133,20 +147,18 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 	bool validIndex = (pixelIndex < numPixels);
 
 	thrust::default_random_engine rng(hash(seed)*hash(pixelIndex));
-	thrust::uniform_real_distribution<float> u01(0,1);
+	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
 	if (validIndex) {
 
 		// Generate a random number:
 		// TODO: Generate more random numbers at a time to speed this up significantly!
-		float randomFloat =  u01(rng); 
+		float randomFloat =  uniformDistribution(rng); 
 
-		//accumulatedColors[pixelIndex] = make_float3((float)pixelIndex / (float)numPixels, (float)pixelIndex / (float)numPixels / 2.0, (float)pixelIndex / (float)numPixels / 4.0);
-		//accumulatedColors[pixelIndex] = make_float3(randomFloat, randomFloat, randomFloat);
 
-		if(abs(randomFloat-1)<.1){
+		if (randomFloat < 0.5) {
 			accumulatedColors[pixelIndex] = rays[pixelIndex].direction;
-		}else{
+		} else {
 			accumulatedColors[pixelIndex] = make_float3(0,0,0);
 		}
 	}
@@ -154,36 +166,36 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 }
 
 extern "C"
-void launch_kernel(int numSpheres, Sphere* spheres, Image* image, Ray* rays, int counter, Camera* rendercam) {
+void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, Camera* rendercam) {
 	
 	// Configure grid and block sizes:
 	int threadsPerBlock = BLOCK_SIZE;
 	// Compute the number of blocks required, performing a ceiling operation to make sure there are enough:
-	int blocksPerGrid = (image->numPixels + threadsPerBlock - 1) / threadsPerBlock;
+	int blocksPerGrid = (numPixels + threadsPerBlock - 1) / threadsPerBlock;
 
 	// Set up random number generator:
 	// TODO: Only do this once, not every frame!
 
-	Color* tempNotAbsorbedColors = (Color*)malloc(image->numPixels * sizeof(Color));
-	Color* tempAccumulatedColors = (Color*)malloc(image->numPixels * sizeof(Color));
+	Color* tempNotAbsorbedColors = (Color*)malloc(numPixels * sizeof(Color));
+	Color* tempAccumulatedColors = (Color*)malloc(numPixels * sizeof(Color));
 	Color* notAbsorbedColors = NULL;
 	Color* accumulatedColors = NULL;
-	CUDA_SAFE_CALL( cudaMalloc((void**)&notAbsorbedColors, image->numPixels * sizeof(Color)) );
-	CUDA_SAFE_CALL( cudaMalloc((void**)&accumulatedColors, image->numPixels * sizeof(Color)) );
-	CUDA_SAFE_CALL( cudaMemcpy( notAbsorbedColors, tempNotAbsorbedColors, image->numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
-	CUDA_SAFE_CALL( cudaMemcpy( accumulatedColors, tempAccumulatedColors, image->numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
+	CUDA_SAFE_CALL( cudaMalloc((void**)&notAbsorbedColors, numPixels * sizeof(Color)) );
+	CUDA_SAFE_CALL( cudaMalloc((void**)&accumulatedColors, numPixels * sizeof(Color)) );
+	CUDA_SAFE_CALL( cudaMemcpy( notAbsorbedColors, tempNotAbsorbedColors, numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
+	CUDA_SAFE_CALL( cudaMemcpy( accumulatedColors, tempAccumulatedColors, numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
 	free(tempNotAbsorbedColors);
 	free(tempAccumulatedColors);
 
-	//only launch raycast from camera kernal if this is the first ever pass!
+	//only launch raycast from camera kernel if this is the first ever pass!
 	if(counter==0){
-		raycast_from_camera_kernal<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, accumulatedColors, image->numPixels, rays);
+		raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, accumulatedColors, numPixels, rays);
 	}
 
-	trace_ray_kernel<<<blocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, image->numPixels, rays, notAbsorbedColors, accumulatedColors, counter);
+	trace_ray_kernel<<<blocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numPixels, rays, notAbsorbedColors, accumulatedColors, counter);
 
 	// Copy the accumulated colors from the device into the host image:
-	CUDA_SAFE_CALL( cudaMemcpy( image->pixels, accumulatedColors, image->numPixels * sizeof(Color), cudaMemcpyDeviceToHost) );
+	CUDA_SAFE_CALL( cudaMemcpy( pixels, accumulatedColors, numPixels * sizeof(Color), cudaMemcpyDeviceToHost) );
 
 	CUDA_SAFE_CALL( cudaFree( notAbsorbedColors ) );
 	CUDA_SAFE_CALL( cudaFree( accumulatedColors ) );

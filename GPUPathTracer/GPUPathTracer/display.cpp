@@ -77,23 +77,20 @@ int main( int argc, char** argv) {
 // Initialize things.
 ////////////////////////////////////////////////////////////////////////////////
 
-uchar3* imageData;
-
 void initializeThings( int argc, char** argv) {
-
-	Image* imageReference = pathTracer.render(); 
-	int imageWidth = imageReference->width;
-	int imageHeight = imageReference->height;
-	imageData = new uchar3[imageWidth * imageHeight];
+	
+    // Init random number generator
+	srand((unsigned)time(0));
 
     // Create GL context
     glutInit( &argc, argv);
     glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
     glutInitWindowSize( window_width, window_height);
-    glutCreateWindow( "Interacting Particles");
-
-    // Init random number generator
-	srand((unsigned)time(0));//srand(1);
+	if (rand() < RAND_MAX / 2) {
+		glutCreateWindow( "Peter and Karl's GPU Path Tracer");
+	} else {
+		glutCreateWindow( "Karl and Peter's GPU Path Tracer");
+	}
 
     // initialize GL
     if( false == initGL()) {
@@ -179,19 +176,15 @@ void display() {
 	// Update the texture:
 	int imageWidth = imageReference->width;
 	int imageHeight = imageReference->height;
-	//uchar3* imageData = new uchar3[imageWidth * imageHeight];
+	uchar3* imageData = new uchar3[imageWidth * imageHeight];
 	for (int i = 0; i < imageHeight; i++) {
 		for (int j = 0; j < imageWidth; j++) {
-			
 			Color c = getPixelRowColumn(imageReference, i, j);
-			c.x = c.x + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].x;
-			c.y = c.y + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].y;
-			c.z = c.z + (float)imageData[pixelIndexRowColumn(imageReference, i, j)].z;
-			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(c);
+			imageData[pixelIndexRowColumn(imageReference, i, j)] = floatTo8Bit(c / imageReference->passCounter);
 		}
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-	//delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
+	delete [] imageData; // glTexImage2D makes a copy of the data, so the original data can (and should!) be deleted here (otherwise it will leak memory like a madman).
 
 
 
@@ -221,7 +214,7 @@ void display() {
 		glRasterPos2f(.01, 0.01); 
      
 		char info[1024];
-		sprintf(info, "Iterations: %u", pathTracer.counter);
+		sprintf(info, "Iterations: %u", imageReference->passCounter);
 		for (unsigned int i = 0; i < strlen(info); i++){
 			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
 		}
