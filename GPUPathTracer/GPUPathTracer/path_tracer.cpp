@@ -47,10 +47,10 @@ PathTracer::~PathTracer() {
 
 void PathTracer::setUpCamera(Camera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
-	cam->position = make_float3(0.0, 4.0, 4.8);
-	cam->view = make_float3(0.0, 0.0, -1.0);
-	cam->up = make_float3(0.0, 1.0, 0.0);
-	cam->fov = make_float2(45,45);
+	cam->position = make_float3(0.0, 0.0, 4.8);
+	cam->view = normalize( make_float3(0.0, 0.0, -1.0) );
+	cam->up = normalize( make_float3(0.0, 1.0, 0.0) );
+	cam->fov = make_float2(40,40); // Derive one based on the other.
 	cam->resolution = make_float2(image->width, image->height); // Setting to image size for now, to avoid duplicate definition that we have to manually keep in sync.
 }
 
@@ -72,35 +72,41 @@ Image* PathTracer::render() {
 
 void PathTracer::setUpScene() {
 
-	numSpheres = 1;
+	numSpheres = 3; // TODO: Move this!
 
 }
 
 void PathTracer::createDeviceData() {
 
     // Initialize data:
-	
+
 	Sphere* tempSpheres = new Sphere[numSpheres];
 
 	Ray* tempRays = new Ray[image->numPixels];
 
-	for (int i = 0; i < numSpheres; i++) {
-		tempSpheres[i].position = make_float3(-0.4567, 0.1234, -10.0);
-		tempSpheres[i].radius = 0.1234;
-		tempSpheres[i].diffuseColor = make_float3(0.4, 0.8, 0.4);
-		tempSpheres[i].emittedColor = make_float3(0, 0, 0);
-	}
 
-	/*
-	// TRASH:
-    for (int i = 0; i < image->height; ++i) {
-		for (int j = 0; j < image->width; ++j) {
-			// TODO: Make a function for pixel array index.
-			tempRays[i * image->width + j].origin = make_float3(0, 0, -20);
-			tempRays[i * image->height + j].direction = make_float3(0, 0, -1);
-		}
-    }
-	*/
+
+
+	// TEMPORARY hard-coded spheres:
+
+	tempSpheres[0].position = make_float3(-0.9, 0, -0.3);
+	tempSpheres[0].radius = 0.8;
+	tempSpheres[0].diffuseColor = make_float3(0.87, 0.15, 0.15);
+	tempSpheres[0].emittedColor = make_float3(0, 0, 0);
+
+	tempSpheres[1].position = make_float3(0.8, 0, -0.8);
+	tempSpheres[1].radius = 0.8;
+	tempSpheres[1].diffuseColor = make_float3(0.15, 0.87, 0.15);
+	tempSpheres[1].emittedColor = make_float3(0, 0, 0);
+
+	tempSpheres[2].position = make_float3(1.3, 1.6, -2.3);
+	tempSpheres[2].radius = 0.8;
+	tempSpheres[2].diffuseColor = make_float3(0, 0, 0);
+	tempSpheres[2].emittedColor = make_float3(5, 5, 5.4);
+
+
+
+
 
     // Copy to GPU:
 	CUDA_SAFE_CALL( cudaMalloc( (void**)&spheres, numSpheres * sizeof(Sphere) ) );

@@ -201,24 +201,33 @@ void display() {
 	glVertex3f (0.0, 0.0, 0.0);
 	glEnd ();
 
-	//write the iteration count to the display
-	glPushAttrib(GL_LIGHTING_BIT);
-		glDisable(GL_LIGHTING);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluOrtho2D(0.0, 1.0, 0.0, 1.0);
 
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+
+	//write the iteration count to the display
+//	glPushAttrib(GL_LIGHTING_BIT);
+//		glDisable(GL_LIGHTING);
+//		glColor4f(1.0, 1.0, 1.0, 1.0);
+//		glMatrixMode(GL_PROJECTION);
+//		glLoadIdentity();
+//		gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+//
+//		glMatrixMode(GL_MODELVIEW);
+//		glLoadIdentity();
+
+		glColor4f(0.0, 0.0, 0.0, 0.0); // glColor4f affects the texture display color and vice versa. Set it to black here.
+
 		glRasterPos2f(.01, 0.01); 
-     
+  
 		char info[1024];
 		sprintf(info, "Iterations: %u", imageReference->passCounter);
 		for (unsigned int i = 0; i < strlen(info); i++){
 			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
 		}
-	glPopAttrib();
+
+		glColor4f(1.0, 1.0, 1.0, 1.0); // glColor4f affects the texture display color and vice versa, so reset it to white here.
+//	glPopAttrib();
+
+
 
     glutSwapBuffers();
     glutPostRedisplay();

@@ -51,6 +51,8 @@ Color gammaCorrect(const Color & color) {
 }
 
 uchar3 floatTo8Bit(const Color & color) {
+	// TODO: Perform dithering in this function, too!
+
 	Color gammaCorrectedColor = gammaCorrect(color);
 	uchar3 eightBitColor;
 	eightBitColor.x = BasicMath::clamp(gammaCorrectedColor.x * 255, 0, 255);
