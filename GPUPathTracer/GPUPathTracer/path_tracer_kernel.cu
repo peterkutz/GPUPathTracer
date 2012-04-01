@@ -20,7 +20,7 @@
 #include "image.h"
 #include "sphere.h"
 #include "ray.h"
-#include "camera.h"
+#include "rendercamera.h"
 
 #include "cuda_safe_call.h"
 
@@ -385,7 +385,7 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 }
 
 extern "C"
-void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, Camera* rendercam) {
+void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, RenderCamera* rendercam) {
 	
 	// Configure grid and block sizes:
 	int threadsPerBlock = BLOCK_SIZE;

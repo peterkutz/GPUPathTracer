@@ -3,7 +3,7 @@
 #include "image.h"
 #include "sphere.h"
 #include "ray.h"
-#include "camera.h"
+#include "rendercamera.h"
 
 #include "windows_include.h"
 
@@ -28,7 +28,7 @@ PathTracer::PathTracer() {
 	image = newImage(512, 512); // TODO: Don't hard-code this.
 
 	// TODO: better way to set up camera/make it not hard-coded
-	rendercam = new Camera;
+	rendercam = new RenderCamera;
 	setUpCamera(rendercam);
 
 	setUpScene();
@@ -37,6 +37,17 @@ PathTracer::PathTracer() {
 
 }
 
+void PathTracer::Reset(){
+	image = newImage(512, 512); // TODO: Don't hard-code this.
+
+	// TODO: better way to set up camera/make it not hard-coded
+	rendercam = new RenderCamera;
+	setUpCamera(rendercam);
+
+	setUpScene();
+
+	createDeviceData();
+}
 
 PathTracer::~PathTracer() {
 
@@ -45,7 +56,7 @@ PathTracer::~PathTracer() {
 
 }
 
-void PathTracer::setUpCamera(Camera* cam){
+void PathTracer::setUpCamera(RenderCamera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
 	cam->position = make_float3(0.0, 0.0, 4.8);
 	cam->view = normalize( make_float3(0.0, 0.0, -1.0) );
@@ -55,6 +66,12 @@ void PathTracer::setUpCamera(Camera* cam){
 }
 
 Image* PathTracer::render() {
+
+	std::cout << "lol" << std::endl;
+	std::cout << rendercam->view.x << " " << rendercam->view.y << " " << rendercam->view.z << std::endl;
+	std::cout << rendercam->up.x << " " << rendercam->up.y << " " << rendercam->up.z << std::endl;
+	std::cout << rendercam->position.x << " " << rendercam->position.y << " " << rendercam->position.z << std::endl;
+
 	Image* singlePassImage = newImage(image->width, image->height);
 
 	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, rendercam);

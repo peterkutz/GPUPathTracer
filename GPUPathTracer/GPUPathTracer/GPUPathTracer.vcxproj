@@ -96,11 +96,13 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="path_tracer.h" />
     <ClInclude Include="path_tracer_kernel.h" />
     <ClInclude Include="ray.h" />
+    <ClInclude Include="rendercamera.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="windows_include.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="basic_math.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="color.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="image.cpp" />

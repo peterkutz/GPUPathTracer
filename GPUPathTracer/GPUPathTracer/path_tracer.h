@@ -5,7 +5,7 @@
 struct Image;
 struct Sphere;
 struct Ray;
-struct Camera;
+struct RenderCamera;
 
 class PathTracer {
 
@@ -19,7 +19,7 @@ private:
 	
 	Ray* rays;
 
-	Camera* rendercam;
+	
 
 	void createDeviceData();
 	void deleteDeviceData();
@@ -30,8 +30,10 @@ public:
 	PathTracer();
 	~PathTracer();
 
+	void Reset();
+	RenderCamera* rendercam;
 	Image* render();
-	void setUpCamera(Camera* cam);
+	void setUpCamera(RenderCamera* cam);
 
 };
 
