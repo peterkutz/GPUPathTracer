@@ -76,7 +76,11 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 	if (validIndex) {
 		//more compact version, in theory uses fewer registers but horrendously unreadable
 		float3 PmE = (E+C) + (((2*(x/(resolution.x-1)))-1)*((cross(C,U)*float(length(C)*tan(fov.x*(PI/180))))/float(length(cross(C,U))))) + (((2*(y/(resolution.y-1)))-1)*((cross(cross(C,U), C)*float(length(C)*tan(-fov.y*(PI/180))))/float(length(cross(cross(C,U), C))))) -E;
+		rays[pixelIndex].origin = E;
 		rays[pixelIndex].direction =  normalize(E + (float(200)*(PmE))/float(length(PmE)));
+
+		// I wonder how much slower the more legible version actually is. I would lean towards writing clean code before doing optimizations that destroy readability.
+		// Also, the more legible version would be even more legible with descriptive variable names.
 
 		//more legible version
 		/*float CD = length(C);
@@ -103,6 +107,15 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 __host__ __device__
 //assumes that ray is already transformed into sphere's object space, returns -1 if no intersection
 float sphereIntersectionTest(const Ray & ray, const Sphere & sphere, float3 & intersectionPoint, float3 & normal) {
+
+	/*
+	// TEST:
+	if (ray.direction.x < 0 && ray.direction.y < 0 && ray.direction.z < 0) {
+		intersectionPoint = ray.origin + 5.0*ray.direction;
+		normal = normalize(intersectionPoint - sphere.position);
+		return 5.0;
+	}
+	*/
 
 	// http://en.wikipedia.org/wiki/Discriminant
 	// http://mathworld.wolfram.com/QuadraticFormula.html
