@@ -15,6 +15,7 @@ namespace BasicMath {
     extern const float FOUR_PI;
     extern const float ONE_OVER_FOUR_PI;
     extern const float E;
+	extern const float SQRT_OF_ONE_THIRD;
 
     extern unsigned int mod(int x, int y); // Proper int mod with an always-positive result (unlike %).
 

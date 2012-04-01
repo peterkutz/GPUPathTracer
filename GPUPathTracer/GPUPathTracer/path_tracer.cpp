@@ -85,10 +85,13 @@ void PathTracer::createDeviceData() {
 	Ray* tempRays = new Ray[image->numPixels];
 
 	for (int i = 0; i < numSpheres; i++) {
-		tempSpheres[i].position = make_float3(0, 0, 0);
-		tempSpheres[i].radius = 2;
+		tempSpheres[i].position = make_float3(-0.4567, 0.1234, -10.0);
+		tempSpheres[i].radius = 0.1234;
+		tempSpheres[i].diffuseColor = make_float3(0.4, 0.8, 0.4);
+		tempSpheres[i].emittedColor = make_float3(0, 0, 0);
 	}
 
+	/*
 	// TRASH:
     for (int i = 0; i < image->height; ++i) {
 		for (int j = 0; j < image->width; ++j) {
@@ -97,6 +100,7 @@ void PathTracer::createDeviceData() {
 			tempRays[i * image->height + j].direction = make_float3(0, 0, -1);
 		}
     }
+	*/
 
     // Copy to GPU:
 	CUDA_SAFE_CALL( cudaMalloc( (void**)&spheres, numSpheres * sizeof(Sphere) ) );
