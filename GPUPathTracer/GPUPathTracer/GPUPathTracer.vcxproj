@@ -93,6 +93,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="cuda_safe_call.h" />
     <ClInclude Include="cutil_math.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="material.h" />
     <ClInclude Include="path_tracer.h" />
     <ClInclude Include="path_tracer_kernel.h" />
     <ClInclude Include="ray.h" />
@@ -104,6 +105,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClCompile Include="color.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="material.cpp" />
     <ClCompile Include="path_tracer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

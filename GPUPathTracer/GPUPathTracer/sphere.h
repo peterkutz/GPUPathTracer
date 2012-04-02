@@ -2,15 +2,14 @@
 #define SPHERE_H
 
 #include <cuda_runtime.h>
-#include "color.h"
+#include "material.h"
 
 struct Sphere {
 
 	float3 position;
 	float radius;
 	
-	Color diffuseColor; //Material* material;
-	Color emittedColor;
+	Material material;
 
 };
 

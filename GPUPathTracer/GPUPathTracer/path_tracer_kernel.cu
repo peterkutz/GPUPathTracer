@@ -21,6 +21,7 @@
 #include "sphere.h"
 #include "ray.h"
 #include "camera.h"
+#include "fresnel.h"
 
 #include "cuda_safe_call.h"
 
@@ -30,7 +31,7 @@
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 15 // TODO: Put settings somewhere else and don't make them defines.
+#define MAX_TRACE_DEPTH 7 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 
 // Numeric constants, copied from BasicMath:
@@ -282,6 +283,31 @@ float3 cosineWeightedDirectionInHemisphere(const float3 & normal, float xi1, flo
 
 }
 
+__host__ __device__
+float3 computeReflectionDirection(const float3 & normal, const float3 & incident) {
+	return 2.0 * dot(normal, incident) * normal - incident;
+}
+
+__host__ __device__
+float3 computeTransmissionDirection(const float3 & normal, const float3 & incident, float refractiveIndex) {
+	return make_float3(0,0,0); // TODO: IMPLEMENT THIS USING SNELL'S LAW!!!
+}
+
+__host__ __device__
+Fresnel computeFresnel(const float3 & normal, const float3 & incident, float refractiveIndex, const float3 & reflectionDirection, const float3 & transmissionDirection) {
+	Fresnel fresnel;
+	float R0 = 0.1; // TEMPORARY HARD-CODED R0 FOR SCHLICK'S APPROXIMATION.
+	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - dot(normal, incident), 5.0); // TEMPORARY!!! TODO: IMPLEMENT ACTUAL FRESNEL EQUATION OR THE FULL SCHLICK'S APPROXIMATION (WITH TRANSMISSION AND DERIVED R0)!!!
+	fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
+	return fresnel;
+}
+
+__host__ __device__
+float3 computeBackgroundColor(const float3 & direction) {
+	float3 darkSkyBlue = make_float3(0.15, 0.25, 0.4); // Dark grayish-blue.
+	return darkSkyBlue * ((dot(direction, normalize(make_float3(-0.5, 0.0, -1.0))) + 1 + 1) / 2);
+}
+
 __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seed) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
@@ -340,27 +366,52 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 
 		if (bestIsGroundPlane || bestIsSphere) {
 
+			// TEST:
+			Material bestMaterial;
 			if (bestIsGroundPlane) {
-				float3 hardCodedGroundPlaneDiffuseColor = make_float3(0.455, 0.43, 0.39);
-				//accumulatedColors[pixelIndex] += NOTHING;
-				notAbsorbedColors[pixelIndex] *= hardCodedGroundPlaneDiffuseColor;
+				Material hardCodedGroundMaterial; // = makeEmptyMaterial();
+				hardCodedGroundMaterial.diffuseColor = make_float3(0.455, 0.43, 0.39);
+				hardCodedGroundMaterial.emittedColor = make_float3(0,0,0);
+				hardCodedGroundMaterial.specularRefractiveIndex = 0;
+				hardCodedGroundMaterial.hasTransmission = false;
+				bestMaterial = hardCodedGroundMaterial;
 			} else if (bestIsSphere) {
-				accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * spheres[bestSphereIndex].emittedColor;
-				notAbsorbedColors[pixelIndex] *= spheres[bestSphereIndex].diffuseColor;
+				bestMaterial = spheres[bestSphereIndex].material;
 			}
 
-			// TODO: Use Russian roulette instead of simple multipliers!
-				
-			// Choose a new ray direction:
-			float randomFloat1 = uniformDistribution(rng); 
-			float randomFloat2 = uniformDistribution(rng); 
-			float3 newRayDirection = cosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
-			rays[pixelIndex].origin = bestIntersectionPoint + ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted.
-			rays[pixelIndex].direction = newRayDirection;
+
+
+			// TEST:
+			// TODO: Reduce duplicate code and memory usage here and in the functions called here.
+			// TODO: Finish implementing the functions called here.
+			float3 incident = -rays[pixelIndex].direction;
+			float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
+			float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, bestMaterial.specularRefractiveIndex);
+			float3 biasVector = ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted!!!
+			if (bestMaterial.specularRefractiveIndex > 1.0 && uniformDistribution(rng) < computeFresnel(bestNormal, incident, bestMaterial.specularRefractiveIndex, reflectionDirection, transmissionDirection).reflectionCoefficient) {
+				// Ray reflected from the surface. Trace a ray in the reflection direction.
+
+				rays[pixelIndex].origin = bestIntersectionPoint + biasVector;
+				rays[pixelIndex].direction = reflectionDirection;
+			} else {
+				// Ray did not reflect from the surface, so consider emission and take a diffuse sample.
+
+				// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
+				accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * bestMaterial.emittedColor;
+				notAbsorbedColors[pixelIndex] *= bestMaterial.diffuseColor;
+
+				// Choose a new ray direction:
+				float randomFloat1 = uniformDistribution(rng); 
+				float randomFloat2 = uniformDistribution(rng); 
+				float3 newRayDirection = cosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
+				rays[pixelIndex].origin = bestIntersectionPoint + biasVector;
+				rays[pixelIndex].direction = newRayDirection;
+			}
 
 		} else {
-			float3 hardCodedBackgroundColor = make_float3(0.15, 0.25, 0.4);
-			accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * hardCodedBackgroundColor;
+			// Ray didn't hit an object, so sample the background and terminate the ray.
+
+			accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * computeBackgroundColor(rays[pixelIndex].direction);
 			notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. TODO: Terminate the ray.
 		}
 

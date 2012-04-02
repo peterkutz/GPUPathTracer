@@ -47,10 +47,10 @@ PathTracer::~PathTracer() {
 
 void PathTracer::setUpCamera(Camera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
-	cam->position = make_float3(0.0, 0.0, 4.8);
-	cam->view = normalize( make_float3(0.0, 0.0, -1.0) );
+	cam->position = make_float3(0.0, 0.5, 4.8);
+	cam->view = normalize( make_float3(0.0, -0.2, -1.0) );
 	cam->up = normalize( make_float3(0.0, 1.0, 0.0) );
-	cam->fov = make_float2(40,40); // Derive one based on the other.
+	cam->fov = make_float2(40,40); // TODO: Derive one based on the other.
 	cam->resolution = make_float2(image->width, image->height); // Setting to image size for now, to avoid duplicate definition that we have to manually keep in sync.
 }
 
@@ -89,20 +89,31 @@ void PathTracer::createDeviceData() {
 
 	// TEMPORARY hard-coded spheres:
 
+	Material red = makeEmptyMaterial();
+	red.diffuseColor = make_float3(0.87, 0.15, 0.15);
+	red.emittedColor = make_float3(0, 0, 0);
+	red.specularRefractiveIndex = 1.62;
+
+	Material green = makeEmptyMaterial();
+	green.diffuseColor = make_float3(0.15, 0.87, 0.15);
+	green.emittedColor = make_float3(0, 0, 0);
+	green.specularRefractiveIndex = 1.62;
+
+	Material light = makeEmptyMaterial();
+	light.diffuseColor = make_float3(0, 0, 0);
+	light.emittedColor = make_float3(5, 5, 5.4);
+
 	tempSpheres[0].position = make_float3(-0.9, 0, -0.3);
 	tempSpheres[0].radius = 0.8;
-	tempSpheres[0].diffuseColor = make_float3(0.87, 0.15, 0.15);
-	tempSpheres[0].emittedColor = make_float3(0, 0, 0);
+	tempSpheres[0].material = red;
 
 	tempSpheres[1].position = make_float3(0.8, 0, -0.8);
 	tempSpheres[1].radius = 0.8;
-	tempSpheres[1].diffuseColor = make_float3(0.15, 0.87, 0.15);
-	tempSpheres[1].emittedColor = make_float3(0, 0, 0);
+	tempSpheres[1].material = green;
 
 	tempSpheres[2].position = make_float3(1.3, 1.6, -2.3);
 	tempSpheres[2].radius = 0.8;
-	tempSpheres[2].diffuseColor = make_float3(0, 0, 0);
-	tempSpheres[2].emittedColor = make_float3(5, 5, 5.4);
+	tempSpheres[2].material = light;
 
 
 
