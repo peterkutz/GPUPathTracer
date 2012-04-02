@@ -29,7 +29,7 @@
 #include <thrust/functional.h>
 
 // Settings:
-#define BLOCK_SIZE 256 // Number of threads in a block.
+#define BLOCK_SIZE 512 //Number of threads in a block.
 #define MAX_TRACE_DEPTH 15 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 
@@ -79,15 +79,15 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 		//more compact version, in theory uses fewer registers but horrendously unreadable
 		// Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
 		// Another optimization we can make is storing the angles in radians.
-		float3 PmE = (E+C) + (((2*(x/(resolution.x-1)))-1)*((cross(C,U)*float(length(C)*tan(fov.x*0.5*(PI/180))))/float(length(cross(C,U))))) + (((2*(y/(resolution.y-1)))-1)*((cross(cross(C,U), C)*float(length(C)*tan(-fov.y*0.5*(PI/180))))/float(length(cross(cross(C,U), C))))) - E;
-		rays[pixelIndex].origin = E;
-		rays[pixelIndex].direction = normalize(PmE);// normalize(E + (float(200)*(PmE))/float(length(PmE)));
+		//float3 PmE = (E+C) + (((2*(x/(resolution.x-1)))-1)*((cross(C,U)*float(length(C)*tan(fov.x*0.5*(PI/180))))/float(length(cross(C,U))))) + (((2*(y/(resolution.y-1)))-1)*((cross(cross(C,U), C)*float(length(C)*tan(-fov.y*0.5*(PI/180))))/float(length(cross(cross(C,U), C))))) - E;
+		//rays[pixelIndex].origin = E;
+		//rays[pixelIndex].direction = normalize(PmE);// normalize(E + (float(200)*(PmE))/float(length(PmE)));
 
 		// I wonder how much slower the more legible version actually is. I would lean towards writing clean code before doing optimizations that destroy readability, but it's seems that's not always the point of GPU programming.
 		// Also, we can further improve the more legible version with descriptive variable names.
 
 		//more legible version
-		/*float CD = length(C);
+		float CD = length(C);
 
 		float3 A = cross(C,U);
 		float3 B = cross(A,C);
@@ -102,7 +102,7 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 		float3 PmE = P-E;
 
 		rays[pixelIndex].direction = normalize(PmE); // normalize(E + (float(200)*(PmE))/float(length(PmE))); // The E + and the 200 weren't necessary.
-		rays[pixelIndex].origin = E;*/
+		rays[pixelIndex].origin = E;
 
 		//accumulatedColors[pixelIndex] = rays[pixelIndex].direction;	//test code, should output green/yellow/black/red if correct
 	}
@@ -298,7 +298,7 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 	if (validIndex) {
 
 		// TODO: Restructure this block! It's a mess. I want polymorphism!
-
+		
 		// Reusables:
 		float t;
 		float3 intersectionPoint;
@@ -364,10 +364,10 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 			notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. TODO: Terminate the ray.
 		}
 
+		
 
-
-		/*
-		// TEST:
+		
+		/*// TEST:
 		// Generate a random number:
 		// TODO: Generate more random numbers at a time to speed this up significantly!
 		float randomFloat = uniformDistribution(rng); 
@@ -376,10 +376,9 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 			accumulatedColors[pixelIndex] = rays[pixelIndex].direction;
 		} else {
 			accumulatedColors[pixelIndex] = make_float3(0,0,0);
-		}
-		*/
+		}*/
 
-
+		
 	}
 
 }

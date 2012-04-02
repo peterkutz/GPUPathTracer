@@ -74,19 +74,10 @@ int main( int argc, char** argv) {
 
 void initCamera()
 {
-   double w = 1;   
-   double h = 1;   
-   double d = 1;   
-   double angle = 0.5*theCamera.dfltVfov*BasicMath::PI/180.0;
-   double dist;
-   if (w > h) dist = w*0.5/std::tan(angle);  // aspect is 1, so i can do this
-   else dist = h*0.5/std::tan(angle);
-  // theCamera.dfltEye = glm::vec3(w*0.5, h*0.5, -(dist+d*0.5));
 
-   theCamera.dfltEye = glm::vec3(0,0,4.8);
-   //theCamera.dfltLook = glm::vec3(w*0.5, h*0.5, 0.0);
-   theCamera.dfltLook = glm::vec3(0, 0, 0.0);
-   theCamera.reset();
+	theCamera.eye = glm::vec4(0,0,14,0);
+	theCamera.up = glm::vec4(0,1,0,0);
+    theCamera.view = glm::vec4(0,0,0,0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +213,6 @@ void display() {
 	glEnd ();
 
 
-
 	//write the iteration count to the display
 //	glPushAttrib(GL_LIGHTING_BIT);
 //		glDisable(GL_LIGHTING);
@@ -251,6 +241,7 @@ void display() {
 
     glutSwapBuffers();
     glutPostRedisplay();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,41 +252,16 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/)
     switch( key) {
     case( 27) :
         exit( 0);
+	case(' ') :
+		initCamera();
+		pathTracer.Reset();
     }
+	
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse event handlers
 ////////////////////////////////////////////////////////////////////////////////
-/*void mouse(int button, int state, int x, int y) {
-
-    if (state == GLUT_DOWN) {
-        mouse_buttons |= 1<<button;
-    } else if (state == GLUT_UP) {
-        mouse_buttons = 0;
-    }
-
-    mouse_old_x = x;
-    mouse_old_y = y;
-    glutPostRedisplay();
-}
-
-void motion(int x, int y) {
-
-    float dx, dy;
-    dx = (float)(x - mouse_old_x);
-    dy = (float)(y - mouse_old_y);
-
-    if (mouse_buttons & 1) {
-        rotate_x += dy * 0.2f;
-        rotate_y += dx * 0.2f;
-    } else if (mouse_buttons & 4) {
-        translate_z += dy * 0.01f;
-    }
-
-    mouse_old_x = x;
-    mouse_old_y = y;
-}*/
 
 int lastX = 0, lastY = 0;
 int theButtonState = 0;
@@ -317,18 +283,18 @@ void motion(int x, int y)
    }
    else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
    {
-      if (moveUpDown && deltaY > 0) theCamera.moveForward(deltaY);
-      else if (moveUpDown && deltaY < 0) theCamera.moveBack(-deltaY);
+      if (moveUpDown && deltaY > 0) theCamera.zoomIn(deltaY);
+      else if (moveUpDown && deltaY < 0) theCamera.zoomOut(-deltaY);
    }    
 
    if (theModifierState & GLUT_ACTIVE_ALT) // camera move
    {
       if (theButtonState == GLUT_RIGHT_BUTTON) // Pan
       {
-         if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
+         /*if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
          else if (moveLeftRight && deltaX < 0) theCamera.moveRight(-deltaX);
          else if (moveUpDown && deltaY > 0) theCamera.moveUp(deltaY);
-         else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);
+         else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);*/
       }   
    }
  

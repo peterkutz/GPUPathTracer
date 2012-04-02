@@ -39,14 +39,6 @@ PathTracer::PathTracer() {
 
 void PathTracer::Reset(){
 	image = newImage(512, 512); // TODO: Don't hard-code this.
-
-	// TODO: better way to set up camera/make it not hard-coded
-	rendercam = new RenderCamera;
-	setUpCamera(rendercam);
-
-	setUpScene();
-
-	createDeviceData();
 }
 
 PathTracer::~PathTracer() {
@@ -66,12 +58,6 @@ void PathTracer::setUpCamera(RenderCamera* cam){
 }
 
 Image* PathTracer::render() {
-
-	std::cout << "lol" << std::endl;
-	std::cout << rendercam->view.x << " " << rendercam->view.y << " " << rendercam->view.z << std::endl;
-	std::cout << rendercam->up.x << " " << rendercam->up.y << " " << rendercam->up.z << std::endl;
-	std::cout << rendercam->position.x << " " << rendercam->position.y << " " << rendercam->position.z << std::endl;
-
 	Image* singlePassImage = newImage(image->width, image->height);
 
 	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, rendercam);
@@ -89,7 +75,7 @@ Image* PathTracer::render() {
 
 void PathTracer::setUpScene() {
 
-	numSpheres = 3; // TODO: Move this!
+	numSpheres = 6; // TODO: Move this!
 
 }
 
@@ -106,7 +92,22 @@ void PathTracer::createDeviceData() {
 
 	// TEMPORARY hard-coded spheres:
 
-	tempSpheres[0].position = make_float3(-0.9, 0, -0.3);
+	/*tempSpheres[0].position = make_float3(-0.9, 0, -0.3);
+	tempSpheres[0].radius = 0.8;
+	tempSpheres[0].diffuseColor = make_float3(0.87, 0.15, 0.15);
+	tempSpheres[0].emittedColor = make_float3(0, 0, 0);
+
+	tempSpheres[1].position = make_float3(0.8, 0, -0.8);
+	tempSpheres[1].radius = 0.8;
+	tempSpheres[1].diffuseColor = make_float3(0.15, 0.87, 0.15);
+	tempSpheres[1].emittedColor = make_float3(0, 0, 0);
+
+	tempSpheres[2].position = make_float3(1.3, 1.6, -2.3);
+	tempSpheres[2].radius = 0.8;
+	tempSpheres[2].diffuseColor = make_float3(0, 0, 0);
+	tempSpheres[2].emittedColor = make_float3(5, 5, 5.4);*/
+
+	tempSpheres[0].position = make_float3(-0.9, 0, 0.3);
 	tempSpheres[0].radius = 0.8;
 	tempSpheres[0].diffuseColor = make_float3(0.87, 0.15, 0.15);
 	tempSpheres[0].emittedColor = make_float3(0, 0, 0);
@@ -121,8 +122,22 @@ void PathTracer::createDeviceData() {
 	tempSpheres[2].diffuseColor = make_float3(0, 0, 0);
 	tempSpheres[2].emittedColor = make_float3(5, 5, 5.4);
 
+	tempSpheres[3].position = make_float3(-0.2, 2, -0.3);
+	tempSpheres[3].radius = 0.3;
+	tempSpheres[3].diffuseColor = make_float3(0.87, 0.15, 0.15);
+	tempSpheres[3].emittedColor = make_float3(0, 0, 0);
 
+	tempSpheres[4].position = make_float3(-1.8, .6, -1.8);
+	tempSpheres[4].radius = 1.2;
+	tempSpheres[4].diffuseColor = make_float3(0.15, 0.87, 0.15);
+	tempSpheres[4].emittedColor = make_float3(0, 0, 0);
 
+	tempSpheres[5].position = make_float3(-1.3, 2.2, -2.3);
+	tempSpheres[5].radius = 0.3;
+	tempSpheres[5].diffuseColor = make_float3(0, 0, 0);
+	tempSpheres[5].emittedColor = make_float3(5, 5, 5.4);
+
+	//tempSpheres[2].emittedColor = make_float3(0, 0, 0);
 
 
     // Copy to GPU:
