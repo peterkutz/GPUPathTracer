@@ -66,7 +66,7 @@ unsigned int hash(unsigned int a) {
 }
 
 //E is eye, C is view, U is up
-__global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 fov, float2 resolution, int numPixels, Ray* rays) {
+__global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 fov, float2 resolution, int numPixels, Ray* rays, unsigned long seed) {
 
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
@@ -77,19 +77,14 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 	int y = int(pixelIndex/resolution.y);
 	int x = pixelIndex - (y*resolution.y);
 	
+	//generate random jitter offsets for supersampled antialiasing
+	thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(seed) );
+	thrust::uniform_real_distribution<float> uniformDistribution(-.5, .5);
+	float jitterValueX = uniformDistribution(rng); 
+	float jitterValueY = uniformDistribution(rng); 
+
 	if (validIndex) {
-		//more compact version, in theory uses fewer registers but horrendously unreadable
-		// Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
-		// Another optimization we can make is storing the angles in radians.
-		float3 PmE = (E+C) + (((2*(x/(resolution.x-1)))-1)*((cross(C,U)*float(length(C)*tan(fov.x*0.5*(PI/180))))/float(length(cross(C,U))))) + (((2*(y/(resolution.y-1)))-1)*((cross(cross(C,U), C)*float(length(C)*tan(-fov.y*0.5*(PI/180))))/float(length(cross(cross(C,U), C))))) - E;
-		rays[pixelIndex].origin = E;
-		rays[pixelIndex].direction = normalize(PmE);// normalize(E + (float(200)*(PmE))/float(length(PmE)));
-
-		// I wonder how much slower the more legible version actually is. I would lean towards writing clean code before doing optimizations that destroy readability, but it's seems that's not always the point of GPU programming.
-		// Also, we can further improve the more legible version with descriptive variable names.
-
-		//more legible version
-		/*float CD = length(C);
+		float CD = length(C);
 
 		float3 A = cross(C,U);
 		float3 B = cross(A,C);
@@ -97,14 +92,14 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 		float3 H = (A*float(CD*tan(fov.x*0.5*(PI/180))))/float(length(A)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
 		float3 V = (B*float(CD*tan(-fov.y*0.5*(PI/180))))/float(length(B)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
 		
-		float sx = x/(resolution.x-1);
-		float sy = y/(resolution.y-1);
+		float sx = (jitterValueX+x)/(resolution.x-1);
+		float sy = (jitterValueY+y)/(resolution.y-1);
 
 		float3 P = M + (((2*sx)-1)*H) + (((2*sy)-1)*V);
 		float3 PmE = P-E;
 
-		rays[pixelIndex].direction = normalize(PmE); // normalize(E + (float(200)*(PmE))/float(length(PmE))); // The E + and the 200 weren't necessary.
-		rays[pixelIndex].origin = E;*/
+		rays[pixelIndex].direction = normalize(PmE);
+		rays[pixelIndex].origin = E;
 
 		//accumulatedColors[pixelIndex] = rays[pixelIndex].direction;	//test code, should output green/yellow/black/red if correct
 	}
@@ -164,21 +159,6 @@ float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & in
 	return t;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/*
 	// TEST:
 	if (sqrt(ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y) < 0.1) { //if (ray.direction.z < 0 && ray.direction.y < 0 && ray.direction.z < 0) {
@@ -189,18 +169,6 @@ float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & in
 		return -1;
 	}
 	*/
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	/*
@@ -422,8 +390,6 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 			notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. TODO: Terminate the ray.
 		}
 
-
-
 		/*
 		// TEST:
 		// Generate a random number:
@@ -472,7 +438,7 @@ void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels
 	// I think we'll have to run this every pass if we want to do anti-aliasing using jittering.
 	// Also, if we don't want to re-compute the camera rays, we'll need a separate array for secondary rays.
 	//if (counter == 0) {
-	raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, numPixels, rays);
+	raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, numPixels, rays, counter);
 	//}
 
 
