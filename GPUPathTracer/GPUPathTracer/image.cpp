@@ -15,10 +15,12 @@ Image* newImage(int width, int height) {
 
 void deleteImage(Image* image) {
 
-	delete [] image->pixels;
-	image->pixels = NULL;
-	delete image;
-	image = NULL;
+	if (image != NULL) {
+		delete [] image->pixels;
+		image->pixels = NULL;
+		delete image;
+		image = NULL;
+	}
 
 }
 
