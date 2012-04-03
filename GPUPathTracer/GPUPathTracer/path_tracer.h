@@ -19,8 +19,6 @@ private:
 	
 	Ray* rays;
 
-	Camera* rendercam;
-
 	void createDeviceData();
 	void deleteDeviceData();
 
@@ -30,9 +28,12 @@ public:
 	PathTracer();
 	~PathTracer();
 
+	void Reset();
+
 	Image* render();
 	void setUpCamera(Camera* cam);
 
+	Camera* rendercam;
 };
 
 #endif // PATH_TRACER_H

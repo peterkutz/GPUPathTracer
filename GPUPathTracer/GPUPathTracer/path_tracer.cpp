@@ -45,6 +45,10 @@ PathTracer::~PathTracer() {
 
 }
 
+void PathTracer::Reset(){
+	image = newImage(512, 512); // TODO: Don't hard-code this.
+}
+
 void PathTracer::setUpCamera(Camera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
 	cam->position = make_float3(0.0, 0.53, 4.8);

@@ -22,10 +22,8 @@
 
 #include "path_tracer.h"
 #include "image.h"
-
-
-
-
+#include "view_camera.h"
+#include "basic_math.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +40,7 @@ float rotate_x = 0.0, rotate_y = 0.0;
 float translate_z = -30.0;
 
 PathTracer pathTracer;
+ViewCamera theCamera;
 
 ////////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -77,8 +76,17 @@ int main( int argc, char** argv) {
 // Initialize things.
 ////////////////////////////////////////////////////////////////////////////////
 
+void initCamera()
+{
+	theCamera.eye = glm::vec4(0.0, 0.13, 5.8,0);
+	theCamera.up = glm::vec4(0,1,0,0);
+	theCamera.view = glm::normalize(glm::vec4(0.0, 0.13, -1.0,0));
+}
+
 void initializeThings( int argc, char** argv) {
 	
+	initCamera();
+
     // Init random number generator
 	srand((unsigned)time(0));
 
@@ -162,12 +170,12 @@ bool initGL() {
     return true;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Display callback
 ////////////////////////////////////////////////////////////////////////////////
 void display() {
+
+	theCamera.buildRenderCam(pathTracer.rendercam);
 
 	Image* imageReference = pathTracer.render(); 
 
@@ -241,38 +249,74 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/)
     switch( key) {
     case( 27) :
         exit( 0);
+	case(' ') :
+		initCamera();
+		pathTracer.Reset();
     }
+	
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse event handlers
 ////////////////////////////////////////////////////////////////////////////////
-void mouse(int button, int state, int x, int y) {
+int lastX = 0, lastY = 0;
+int theButtonState = 0;
+int theModifierState = 0;
 
-    if (state == GLUT_DOWN) {
-        mouse_buttons |= 1<<button;
-    } else if (state == GLUT_UP) {
-        mouse_buttons = 0;
-    }
+void motion(int x, int y)
+{
+   int deltaX = lastX - x;
+   int deltaY = lastY - y;
+   bool moveLeftRight = abs(deltaX) > abs(deltaY);
+   bool moveUpDown = !moveLeftRight;
 
-    mouse_old_x = x;
-    mouse_old_y = y;
-    glutPostRedisplay();
+   if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
+   {
+      if (moveLeftRight && deltaX > 0) theCamera.orbitLeft(deltaX);
+      else if (moveLeftRight && deltaX < 0) theCamera.orbitRight(-deltaX);
+      else if (moveUpDown && deltaY > 0) theCamera.orbitUp(deltaY);
+      else if (moveUpDown && deltaY < 0) theCamera.orbitDown(-deltaY);
+   }
+   else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
+   {
+      if (moveUpDown && deltaY > 0) theCamera.zoomIn(deltaY);
+      else if (moveUpDown && deltaY < 0) theCamera.zoomOut(-deltaY);
+   }    
+
+   if (theModifierState & GLUT_ACTIVE_ALT) // camera move
+   {
+      if (theButtonState == GLUT_RIGHT_BUTTON) // Pan
+      {
+         /*if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
+         else if (moveLeftRight && deltaX < 0) theCamera.moveRight(-deltaX);
+         else if (moveUpDown && deltaY > 0) theCamera.moveUp(deltaY);
+         else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);*/
+      }   
+   }
+ 
+   lastX = x;
+   lastY = y;
+   pathTracer.Reset();
+   glutPostRedisplay();
 }
 
-void motion(int x, int y) {
+void mouse(int button, int state, int x, int y)
+{
+   theButtonState = button;
+   theModifierState = glutGetModifiers();
+   lastX = x;
+   lastY = y;
 
-    float dx, dy;
-    dx = (float)(x - mouse_old_x);
-    dy = (float)(y - mouse_old_y);
+   //glutSetMenu(theMenu);
+   //if (theModifierState & GLUT_ACTIVE_ALT)
+   //{
+    //  glutDetachMenu(GLUT_RIGHT_BUTTON);
+   //}
+   //else
+  // {
+   //   glutAttachMenu(GLUT_RIGHT_BUTTON);
+   //}
 
-    if (mouse_buttons & 1) {
-        rotate_x += dy * 0.2f;
-        rotate_y += dx * 0.2f;
-    } else if (mouse_buttons & 4) {
-        translate_z += dy * 0.01f;
-    }
-
-    mouse_old_x = x;
-    mouse_old_y = y;
+   motion(x, y);
 }
