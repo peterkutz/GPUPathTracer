@@ -24,14 +24,14 @@
 #include "image.h"
 #include "view_camera.h"
 #include "basic_math.h"
-
+#include "camera.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // constants
 
 // window
-int window_width = 512; // Currently not related to render width.
-int window_height = 512; // Currently not related to render height.
+int window_width = 512; // Determines render width.
+int window_height = 512; // Determines render height.
 
 // mouse controls
 int mouse_old_x, mouse_old_y;
@@ -39,8 +39,12 @@ int mouse_buttons = 0;
 float rotate_x = 0.0, rotate_y = 0.0;
 float translate_z = -30.0;
 
-PathTracer pathTracer;
-ViewCamera theCamera;
+ViewCamera* theCamera = new ViewCamera();
+
+Camera* renderCamera;
+
+PathTracer* pathTracer;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -58,12 +62,6 @@ void mouse(int button, int state, int x, int y);
 void motion(int x, int y);
 
 
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,14 +76,22 @@ int main( int argc, char** argv) {
 
 void initCamera()
 {
-	theCamera.eye = glm::vec4(0.0, 0.13, 5.8,0);
-	theCamera.up = glm::vec4(0,1,0,0);
-	theCamera.view = glm::normalize(glm::vec4(0.0, 0.13, -1.0,0));
+	theCamera->eye = glm::vec4(0.0, 0.13, 5.8,0);
+	theCamera->up = glm::vec4(0,1,0,0);
+	theCamera->view = glm::normalize(glm::vec4(0.0, 0.13, -1.0,0));
+	theCamera->setResolution(window_width, window_height);
+	theCamera->setFOVX(45);
 }
 
 void initializeThings( int argc, char** argv) {
 	
 	initCamera();
+
+	renderCamera = new Camera;
+
+	theCamera->buildRenderCam(renderCamera);
+
+	pathTracer = new PathTracer(renderCamera);
 
     // Init random number generator
 	srand((unsigned)time(0));
@@ -175,9 +181,9 @@ bool initGL() {
 ////////////////////////////////////////////////////////////////////////////////
 void display() {
 
-	theCamera.buildRenderCam(pathTracer.rendercam);
+	theCamera->buildRenderCam(pathTracer->rendercam);
 
-	Image* imageReference = pathTracer.render(); 
+	Image* imageReference = pathTracer->render(); 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -208,8 +214,6 @@ void display() {
 	glTexCoord2f (0.0, 1.0);
 	glVertex3f (0.0, 0.0, 0.0);
 	glEnd ();
-
-
 
 	//write the iteration count to the display
 //	glPushAttrib(GL_LIGHTING_BIT);
@@ -251,7 +255,7 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/)
         exit( 0);
 	case(' ') :
 		initCamera();
-		pathTracer.Reset();
+		pathTracer->Reset();
     }
 	
 }
@@ -273,15 +277,15 @@ void motion(int x, int y)
 
    if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
    {
-      if (moveLeftRight && deltaX > 0) theCamera.orbitLeft(deltaX);
-      else if (moveLeftRight && deltaX < 0) theCamera.orbitRight(-deltaX);
-      else if (moveUpDown && deltaY > 0) theCamera.orbitUp(deltaY);
-      else if (moveUpDown && deltaY < 0) theCamera.orbitDown(-deltaY);
+      if (moveLeftRight && deltaX > 0) theCamera->orbitLeft(deltaX);
+      else if (moveLeftRight && deltaX < 0) theCamera->orbitRight(-deltaX);
+      else if (moveUpDown && deltaY > 0) theCamera->orbitUp(deltaY);
+      else if (moveUpDown && deltaY < 0) theCamera->orbitDown(-deltaY);
    }
    else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
    {
-      if (moveUpDown && deltaY > 0) theCamera.zoomIn(deltaY);
-      else if (moveUpDown && deltaY < 0) theCamera.zoomOut(-deltaY);
+      if (moveUpDown && deltaY > 0) theCamera->zoomIn(deltaY);
+      else if (moveUpDown && deltaY < 0) theCamera->zoomOut(-deltaY);
    }    
 
    if (theModifierState & GLUT_ACTIVE_ALT) // camera move
@@ -297,7 +301,7 @@ void motion(int x, int y)
  
    lastX = x;
    lastY = y;
-   pathTracer.Reset();
+   pathTracer->Reset();
    glutPostRedisplay();
 }
 

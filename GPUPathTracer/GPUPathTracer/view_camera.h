@@ -14,6 +14,8 @@ public:
 	void orbitDown(float m);
 	void zoomIn(float m);
 	void zoomOut(float m);
+	void setResolution(float x, float y);
+	void setFOVX(float fovx);
 
 	void buildRenderCam(Camera* rendercam);
 
@@ -21,6 +23,8 @@ public:
 	glm::vec4 view;
 	glm::vec4 eye;
 	glm::mat4 rotation;
+	glm::vec2 resolution;
+	glm::vec2 fov;
 };
 
 #endif // VIEW_CAMERA_H

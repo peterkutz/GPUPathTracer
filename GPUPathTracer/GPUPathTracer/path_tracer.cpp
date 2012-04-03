@@ -23,13 +23,11 @@
 
 
 
-PathTracer::PathTracer() {
+PathTracer::PathTracer(Camera* cam) {
 
-	image = newImage(512, 512); // TODO: Don't hard-code this.
+	rendercam = cam;
 
-	// TODO: better way to set up camera/make it not hard-coded
-	rendercam = new Camera;
-	setUpCamera(rendercam);
+	image = newImage(rendercam->resolution.x, rendercam->resolution.y);
 
 	setUpScene();
 
@@ -46,17 +44,9 @@ PathTracer::~PathTracer() {
 }
 
 void PathTracer::Reset(){
-	image = newImage(512, 512); // TODO: Don't hard-code this.
+	image = newImage(rendercam->resolution.x, rendercam->resolution.y); 
 }
 
-void PathTracer::setUpCamera(Camera* cam){
-	// TODO: better way to set up camera/make it not hard-coded
-	cam->position = make_float3(0.0, 0.53, 4.8);
-	cam->view = normalize( make_float3(0.0, -0.17, -1.0) );
-	cam->up = normalize( make_float3(0.0, 1.0, 0.0) );
-	cam->fov = make_float2(40,40); // TODO: Derive one based on the other.
-	cam->resolution = make_float2(image->width, image->height); // Setting to image size for now, to avoid duplicate definition that we have to manually keep in sync.
-}
 
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);

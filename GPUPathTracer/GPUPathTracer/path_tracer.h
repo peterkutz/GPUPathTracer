@@ -25,13 +25,12 @@ private:
 	void setUpScene();
 
 public:
-	PathTracer();
+	PathTracer(Camera* cam);
 	~PathTracer();
 
 	void Reset();
 
 	Image* render();
-	void setUpCamera(Camera* cam);
 
 	Camera* rendercam;
 };

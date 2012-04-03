@@ -8,7 +8,7 @@ struct Camera {
 	float3 position;
 	float3 view;
 	float3 up;
-	float2 fov; // TODO: Define one angle, derive the other one.
+	float2 fov; 
 };
 
 #endif // CAMERA_H

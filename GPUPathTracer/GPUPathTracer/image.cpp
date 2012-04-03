@@ -6,7 +6,7 @@ Image* newImage(int width, int height) {
 	Image* image = new Image();
 	image->width = width;
 	image->height = height;
-	image->numPixels = image->width * image->width;
+	image->numPixels = image->width * image->height;
 	image->pixels = new Color[image->numPixels];
 	image->passCounter = 0;
 	return image;
