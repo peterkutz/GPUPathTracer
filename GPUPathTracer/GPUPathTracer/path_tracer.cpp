@@ -47,8 +47,8 @@ PathTracer::~PathTracer() {
 
 void PathTracer::setUpCamera(Camera* cam){
 	// TODO: better way to set up camera/make it not hard-coded
-	cam->position = make_float3(0.0, 0.5, 4.8);
-	cam->view = normalize( make_float3(0.0, -0.2, -1.0) );
+	cam->position = make_float3(0.0, 0.53, 4.8);
+	cam->view = normalize( make_float3(0.0, -0.17, -1.0) );
 	cam->up = normalize( make_float3(0.0, 1.0, 0.0) );
 	cam->fov = make_float2(40,40); // TODO: Derive one based on the other.
 	cam->resolution = make_float2(image->width, image->height); // Setting to image size for now, to avoid duplicate definition that we have to manually keep in sync.
@@ -72,7 +72,7 @@ Image* PathTracer::render() {
 
 void PathTracer::setUpScene() {
 
-	numSpheres = 3; // TODO: Move this!
+	numSpheres = 8; // TODO: Move this!
 
 }
 
@@ -92,28 +92,62 @@ void PathTracer::createDeviceData() {
 	Material red = makeEmptyMaterial();
 	red.diffuseColor = make_float3(0.87, 0.15, 0.15);
 	red.emittedColor = make_float3(0, 0, 0);
+	red.specularColor = make_float3(1, 1, 1);
 	red.specularRefractiveIndex = 1.62;
 
 	Material green = makeEmptyMaterial();
 	green.diffuseColor = make_float3(0.15, 0.87, 0.15);
 	green.emittedColor = make_float3(0, 0, 0);
+	green.specularColor = make_float3(1, 1, 1);
 	green.specularRefractiveIndex = 1.62;
+
+	Material white = makeEmptyMaterial();
+	white.diffuseColor = make_float3(0.9, 0.9, 0.9);
+	white.emittedColor = make_float3(0, 0, 0);
+	//white.specularColor = make_float3(1, 1, 1);
+	//white.specularRefractiveIndex = 1.05;
+
+	Material gold = makeEmptyMaterial();
+	gold.diffuseColor = make_float3(0, 0, 0);
+	gold.emittedColor = make_float3(0, 0, 0);
+	gold.specularColor = make_float3(0.869, 0.621, 0.027);
+	gold.specularRefractiveIndex = 1000.0; // TODO: Make metal option or something!
 
 	Material light = makeEmptyMaterial();
 	light.diffuseColor = make_float3(0, 0, 0);
-	light.emittedColor = make_float3(5, 5, 5.4);
+	light.emittedColor = make_float3(5.5, 4, 5.4);
 
-	tempSpheres[0].position = make_float3(-0.9, 0, -0.3);
+	tempSpheres[0].position = make_float3(-0.9, 0, -0.9);
 	tempSpheres[0].radius = 0.8;
 	tempSpheres[0].material = red;
 
-	tempSpheres[1].position = make_float3(0.8, 0, -0.8);
+	tempSpheres[1].position = make_float3(0.8, 0, -0.4);
 	tempSpheres[1].radius = 0.8;
 	tempSpheres[1].material = green;
 
-	tempSpheres[2].position = make_float3(1.3, 1.6, -2.3);
-	tempSpheres[2].radius = 0.8;
-	tempSpheres[2].material = light;
+	tempSpheres[2].position = make_float3(-0.5, -0.4, 1.0);
+	tempSpheres[2].radius = 0.4;
+	tempSpheres[2].material = gold;
+
+	tempSpheres[3].position = make_float3(1.3, 1.6, -2.3);
+	tempSpheres[3].radius = 0.8;
+	tempSpheres[3].material = light;
+
+	tempSpheres[4].position = make_float3(-1.0, -0.7, 1.2);
+	tempSpheres[4].radius = 0.1;
+	tempSpheres[4].material = light;
+
+	tempSpheres[5].position = make_float3(-0.5, -0.7, 1.7);
+	tempSpheres[5].radius = 0.1;
+	tempSpheres[5].material = light;
+
+	tempSpheres[6].position = make_float3(0.3, -0.7, 1.4);
+	tempSpheres[6].radius = 0.1;
+	tempSpheres[6].material = light;
+
+	tempSpheres[7].position = make_float3(0.9, -0.5, 1.3);
+	tempSpheres[7].radius = 0.3;
+	tempSpheres[7].material = white;
 
 
 

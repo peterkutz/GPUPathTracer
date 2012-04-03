@@ -8,6 +8,7 @@ struct Material {
 
 	Color diffuseColor;
 	Color emittedColor;
+	Color specularColor;
 	float specularRefractiveIndex;
 	bool hasTransmission;
 

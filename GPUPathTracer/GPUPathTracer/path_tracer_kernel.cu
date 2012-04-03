@@ -31,8 +31,9 @@
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 7 // TODO: Put settings somewhere else and don't make them defines.
+#define MAX_TRACE_DEPTH 11 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
+#define AIR_IOR 1.000293 // Don't put this here!
 
 // Numeric constants, copied from BasicMath:
 #define PI                    3.1415926535897932384626422832795028841971
@@ -289,15 +290,17 @@ float3 computeReflectionDirection(const float3 & normal, const float3 & incident
 }
 
 __host__ __device__
-float3 computeTransmissionDirection(const float3 & normal, const float3 & incident, float refractiveIndex) {
+float3 computeTransmissionDirection(const float3 & normal, const float3 & incident, float refractiveIndexIncident, float refractiveIndexTransmitted) {
 	return make_float3(0,0,0); // TODO: IMPLEMENT THIS USING SNELL'S LAW!!!
 }
 
 __host__ __device__
-Fresnel computeFresnel(const float3 & normal, const float3 & incident, float refractiveIndex, const float3 & reflectionDirection, const float3 & transmissionDirection) {
+Fresnel computeFresnel(const float3 & normal, const float3 & incident, float refractiveIndexIncident, float refractiveIndexTransmitted, const float3 & reflectionDirection, const float3 & transmissionDirection) {
+	// Shlick's approximation including expression for R0 found at http://www.bramz.net/data/writings/reflection_transmission.pdf
+	// TODO: IMPLEMENT ACTUAL FRESNEL EQUATIONS, OR THE FULL SCHLICK'S APPROXIMATION WITH TRANSMISSION (BASED ON THE LINK ABOVE)!!!
 	Fresnel fresnel;
-	float R0 = 0.1; // TEMPORARY HARD-CODED R0 FOR SCHLICK'S APPROXIMATION.
-	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - dot(normal, incident), 5.0); // TEMPORARY!!! TODO: IMPLEMENT ACTUAL FRESNEL EQUATION OR THE FULL SCHLICK'S APPROXIMATION (WITH TRANSMISSION AND DERIVED R0)!!!
+	float R0 = pow( (refractiveIndexIncident - refractiveIndexTransmitted) / (refractiveIndexIncident + refractiveIndexTransmitted), 2 ); // For Schlick's approximation.
+	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - dot(normal, incident), 5.0);
 	fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
 	return fresnel;
 }
@@ -308,7 +311,7 @@ float3 computeBackgroundColor(const float3 & direction) {
 	return darkSkyBlue * ((dot(direction, normalize(make_float3(-0.5, 0.0, -1.0))) + 1 + 1) / 2);
 }
 
-__global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seed) {
+__global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
 
@@ -318,12 +321,12 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 	int pixelIndex = BLOCK_SIZE * bx + tx;
 	bool validIndex = (pixelIndex < numPixels);
 
-	thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(rayDepth) );
+	thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
 	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
 	if (validIndex) {
 
-		// TODO: Restructure this block! It's a mess. I want polymorphism!
+		// TODO: Restructure this block! It's a mess. I want classes!
 
 		// Reusables:
 		float t;
@@ -386,10 +389,14 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 			// TODO: Finish implementing the functions called here.
 			float3 incident = -rays[pixelIndex].direction;
 			float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
-			float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, bestMaterial.specularRefractiveIndex);
+			float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, AIR_IOR, bestMaterial.specularRefractiveIndex); // TODO: Detect total internal reflection!!!
 			float3 biasVector = ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted!!!
-			if (bestMaterial.specularRefractiveIndex > 1.0 && uniformDistribution(rng) < computeFresnel(bestNormal, incident, bestMaterial.specularRefractiveIndex, reflectionDirection, transmissionDirection).reflectionCoefficient) {
+			float rouletteRandomFloat = uniformDistribution(rng);
+			if (bestMaterial.specularRefractiveIndex > 1.0 && rouletteRandomFloat < computeFresnel(bestNormal, incident, AIR_IOR, bestMaterial.specularRefractiveIndex, reflectionDirection, transmissionDirection).reflectionCoefficient) {
 				// Ray reflected from the surface. Trace a ray in the reflection direction.
+
+				// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
+				notAbsorbedColors[pixelIndex] *= bestMaterial.specularColor;
 
 				rays[pixelIndex].origin = bestIntersectionPoint + biasVector;
 				rays[pixelIndex].direction = reflectionDirection;
