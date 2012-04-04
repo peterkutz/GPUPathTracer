@@ -43,7 +43,8 @@ PathTracer::~PathTracer() {
 
 }
 
-void PathTracer::Reset(){
+void PathTracer::reset() {
+	deleteImage(image); // Very important!
 	image = newImage(rendercam->resolution.x, rendercam->resolution.y); 
 }
 

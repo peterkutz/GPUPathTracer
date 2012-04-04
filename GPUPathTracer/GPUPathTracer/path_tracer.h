@@ -28,7 +28,7 @@ public:
 	PathTracer(Camera* cam);
 	~PathTracer();
 
-	void Reset();
+	void reset();
 
 	Image* render();
 

@@ -255,7 +255,7 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/)
         exit( 0);
 	case(' ') :
 		initCamera();
-		pathTracer->Reset();
+		pathTracer->reset();
     }
 	
 }
@@ -301,8 +301,8 @@ void motion(int x, int y)
  
    lastX = x;
    lastY = y;
-   pathTracer->Reset();
-   glutPostRedisplay();
+   pathTracer->reset();
+   glutPostRedisplay(); // Is this necessary?
 }
 
 void mouse(int button, int state, int x, int y)
