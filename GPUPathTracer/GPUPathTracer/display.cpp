@@ -39,7 +39,7 @@ int mouse_buttons = 0;
 float rotate_x = 0.0, rotate_y = 0.0;
 float translate_z = -30.0;
 
-ViewCamera* theCamera = new ViewCamera();
+ViewCamera* viewCamera = new ViewCamera();
 
 Camera* renderCamera;
 
@@ -76,11 +76,8 @@ int main( int argc, char** argv) {
 
 void initCamera()
 {
-	theCamera->eye = glm::vec4(0.0, 0.13, 5.8,0);
-	theCamera->up = glm::vec4(0,1,0,0);
-	theCamera->view = glm::normalize(glm::vec4(0.0, 0.13, -1.0,0));
-	theCamera->setResolution(window_width, window_height);
-	theCamera->setFOVX(45);
+	viewCamera->setResolution(window_width, window_height);
+	viewCamera->setFOVX(45);
 }
 
 void initializeThings( int argc, char** argv) {
@@ -89,7 +86,7 @@ void initializeThings( int argc, char** argv) {
 
 	renderCamera = new Camera;
 
-	theCamera->buildRenderCam(renderCamera);
+	viewCamera->buildRenderCam(renderCamera);
 
 	pathTracer = new PathTracer(renderCamera);
 
@@ -181,7 +178,7 @@ bool initGL() {
 ////////////////////////////////////////////////////////////////////////////////
 void display() {
 
-	theCamera->buildRenderCam(pathTracer->rendercam);
+	viewCamera->buildRenderCam(pathTracer->renderCam);
 
 	Image* imageReference = pathTracer->render(); 
 
@@ -275,30 +272,26 @@ void motion(int x, int y)
 
 	if (deltaX != 0 || deltaY != 0) {
 
-		bool moveLeftRight = abs(deltaX) > abs(deltaY);
-		bool moveUpDown = !moveLeftRight;
+		//bool moveLeftRight = abs(deltaX) > abs(deltaY);
+		//bool moveUpDown = !moveLeftRight;
 
 		if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
 		{
-			if (moveLeftRight && deltaX > 0) theCamera->orbitLeft(deltaX);
-			else if (moveLeftRight && deltaX < 0) theCamera->orbitRight(-deltaX);
-			else if (moveUpDown && deltaY > 0) theCamera->orbitUp(deltaY);
-			else if (moveUpDown && deltaY < 0) theCamera->orbitDown(-deltaY);
+			viewCamera->changeYaw(deltaX * 0.01);
+			viewCamera->changePitch(-deltaY * 0.01);
 		}
 		else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
 		{
-			if (moveUpDown && deltaY > 0) theCamera->zoomIn(deltaY);
-			else if (moveUpDown && deltaY < 0) theCamera->zoomOut(-deltaY);
+			viewCamera->changeRadius(-deltaY * 0.01);
 		}    
 
-		if (theModifierState & GLUT_ACTIVE_ALT) // camera move
+		if (theButtonState == GLUT_RIGHT_BUTTON) // camera move
 		{
-			if (theButtonState == GLUT_RIGHT_BUTTON) // Pan
+			viewCamera->changeRadius(-deltaY * 0.01);
+
+			if (theModifierState & GLUT_ACTIVE_ALT) // Pan
 			{
-				/*if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
-				else if (moveLeftRight && deltaX < 0) theCamera.moveRight(-deltaX);
-				else if (moveUpDown && deltaY > 0) theCamera.moveUp(deltaY);
-				else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);*/
+
 			}   
 		}
  

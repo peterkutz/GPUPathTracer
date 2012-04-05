@@ -14,6 +14,7 @@ namespace BasicMath {
     extern const float TWO_PI;
     extern const float FOUR_PI;
     extern const float ONE_OVER_FOUR_PI;
+	extern const float PI_OVER_TWO;
     extern const float E;
 	extern const float SQRT_OF_ONE_THIRD;
 
@@ -35,6 +36,10 @@ namespace BasicMath {
 
     extern bool isNaN(float n); // std::isnan is not avaiable in all compilers.
 	
+	extern float min(float a, float b);
+
+	extern float max(float a, float b);
+
     extern float clamp(float n, float low, float high);
 	
     extern float repeat(float n, float modulus);

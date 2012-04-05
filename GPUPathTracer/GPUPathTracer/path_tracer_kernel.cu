@@ -409,7 +409,7 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 }
 
 extern "C"
-void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, Camera* rendercam) {
+void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, Camera* renderCam) {
 	
 	// Configure grid and block sizes:
 	int threadsPerBlock = BLOCK_SIZE;
@@ -438,7 +438,7 @@ void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels
 	// I think we'll have to run this every pass if we want to do anti-aliasing using jittering.
 	// Also, if we don't want to re-compute the camera rays, we'll need a separate array for secondary rays.
 	//if (counter == 0) {
-	raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(rendercam->position, rendercam->view, rendercam->up, rendercam->fov, rendercam->resolution, numPixels, rays, counter);
+	raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(renderCam->position, renderCam->view, renderCam->up, renderCam->fov, renderCam->resolution, numPixels, rays, counter);
 	//}
 
 

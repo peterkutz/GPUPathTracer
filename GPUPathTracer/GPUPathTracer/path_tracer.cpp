@@ -25,9 +25,9 @@
 
 PathTracer::PathTracer(Camera* cam) {
 
-	rendercam = cam;
+	renderCam = cam;
 
-	image = newImage(rendercam->resolution.x, rendercam->resolution.y);
+	image = newImage(renderCam->resolution.x, renderCam->resolution.y);
 
 	setUpScene();
 
@@ -45,14 +45,14 @@ PathTracer::~PathTracer() {
 
 void PathTracer::reset() {
 	deleteImage(image); // Very important!
-	image = newImage(rendercam->resolution.x, rendercam->resolution.y); 
+	image = newImage(renderCam->resolution.x, renderCam->resolution.y); 
 }
 
 
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
 
-	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, rendercam);
+	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, renderCam);
 
 	// TODO: Make a function for this (or a method---maybe Image can just be a class).
 	for (int i = 0; i < image->numPixels; i++) {

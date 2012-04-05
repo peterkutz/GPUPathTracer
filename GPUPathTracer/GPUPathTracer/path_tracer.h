@@ -32,7 +32,7 @@ public:
 
 	Image* render();
 
-	Camera* rendercam;
+	Camera* renderCam;
 };
 
 #endif // PATH_TRACER_H

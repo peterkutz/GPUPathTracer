@@ -5,24 +5,28 @@
 
 class ViewCamera
 {
+private:
+
+	glm::vec3 centerPosition;
+	float yaw;
+	float pitch;
+	float radius;
+
+	void fixYaw();
+	void fixPitch();
+	void fixRadius();
+
 public:
 	ViewCamera();
 	virtual ~ViewCamera();
-   	void orbitLeft(float m);
-	void orbitRight(float m);
-	void orbitUp(float m);
-	void orbitDown(float m);
-	void zoomIn(float m);
-	void zoomOut(float m);
+   	void changeYaw(float m);
+	void changePitch(float m);
+	void changeRadius(float m);
 	void setResolution(float x, float y);
 	void setFOVX(float fovx);
 
-	void buildRenderCam(Camera* rendercam);
+	void buildRenderCam(Camera* renderCam);
 
-	glm::vec4 up;
-	glm::vec4 view;
-	glm::vec4 eye;
-	glm::mat4 rotation;
 	glm::vec2 resolution;
 	glm::vec2 fov;
 };
