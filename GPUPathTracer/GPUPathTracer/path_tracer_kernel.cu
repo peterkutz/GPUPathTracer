@@ -109,17 +109,23 @@ __global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 
 
 __host__ __device__
 float findGroundPlaneIntersection(float elevation, const Ray & ray, float3 & intersectionPoint, float3 & normal) {
-	// Only finds intersections with the top of the plane.
 
-	if (ray.direction.y < 0) {
+	if (ray.direction.y != 0) {
 
 		double t = (elevation - ray.origin.y) / ray.direction.y;
 	
 		intersectionPoint = ray.origin + t * ray.direction;
-		normal = make_float3(0, 1, 0);
+
+		if (ray.direction.y < 0) { // Top of plane.
+			normal = make_float3(0, 1, 0);
+		} else { // Bottom of plane.
+			normal = make_float3(0, 1, 0);//make_float3(0, -1, 0); // Make the normal negative for opaque appearance. Positive normal lets you see diffusely through the ground which looks really cool and gives you a better idea of where you are!
+		}
 		
 		return t;
+
 	}
+
 	
 	return -1; // No intersection.
 }
