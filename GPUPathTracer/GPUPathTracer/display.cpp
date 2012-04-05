@@ -270,57 +270,63 @@ int theModifierState = 0;
 
 void motion(int x, int y)
 {
-   int deltaX = lastX - x;
-   int deltaY = lastY - y;
-   bool moveLeftRight = abs(deltaX) > abs(deltaY);
-   bool moveUpDown = !moveLeftRight;
+	int deltaX = lastX - x;
+	int deltaY = lastY - y;
 
-   if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
-   {
-      if (moveLeftRight && deltaX > 0) theCamera->orbitLeft(deltaX);
-      else if (moveLeftRight && deltaX < 0) theCamera->orbitRight(-deltaX);
-      else if (moveUpDown && deltaY > 0) theCamera->orbitUp(deltaY);
-      else if (moveUpDown && deltaY < 0) theCamera->orbitDown(-deltaY);
-   }
-   else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
-   {
-      if (moveUpDown && deltaY > 0) theCamera->zoomIn(deltaY);
-      else if (moveUpDown && deltaY < 0) theCamera->zoomOut(-deltaY);
-   }    
+	if (deltaX != 0 || deltaY != 0) {
 
-   if (theModifierState & GLUT_ACTIVE_ALT) // camera move
-   {
-      if (theButtonState == GLUT_RIGHT_BUTTON) // Pan
-      {
-         /*if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
-         else if (moveLeftRight && deltaX < 0) theCamera.moveRight(-deltaX);
-         else if (moveUpDown && deltaY > 0) theCamera.moveUp(deltaY);
-         else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);*/
-      }   
-   }
+		bool moveLeftRight = abs(deltaX) > abs(deltaY);
+		bool moveUpDown = !moveLeftRight;
+
+		if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
+		{
+			if (moveLeftRight && deltaX > 0) theCamera->orbitLeft(deltaX);
+			else if (moveLeftRight && deltaX < 0) theCamera->orbitRight(-deltaX);
+			else if (moveUpDown && deltaY > 0) theCamera->orbitUp(deltaY);
+			else if (moveUpDown && deltaY < 0) theCamera->orbitDown(-deltaY);
+		}
+		else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
+		{
+			if (moveUpDown && deltaY > 0) theCamera->zoomIn(deltaY);
+			else if (moveUpDown && deltaY < 0) theCamera->zoomOut(-deltaY);
+		}    
+
+		if (theModifierState & GLUT_ACTIVE_ALT) // camera move
+		{
+			if (theButtonState == GLUT_RIGHT_BUTTON) // Pan
+			{
+				/*if (moveLeftRight && deltaX > 0) theCamera.moveLeft(deltaX);
+				else if (moveLeftRight && deltaX < 0) theCamera.moveRight(-deltaX);
+				else if (moveUpDown && deltaY > 0) theCamera.moveUp(deltaY);
+				else if (moveUpDown && deltaY < 0) theCamera.moveDown(-deltaY);*/
+			}   
+		}
  
-   lastX = x;
-   lastY = y;
-   pathTracer->reset();
-   glutPostRedisplay(); // Is this necessary?
+		lastX = x;
+		lastY = y;
+		pathTracer->reset();
+		glutPostRedisplay(); // Is this necessary?
+
+	}
+
 }
 
 void mouse(int button, int state, int x, int y)
 {
-   theButtonState = button;
-   theModifierState = glutGetModifiers();
-   lastX = x;
-   lastY = y;
+	theButtonState = button;
+	theModifierState = glutGetModifiers();
+	lastX = x;
+	lastY = y;
 
-   //glutSetMenu(theMenu);
-   //if (theModifierState & GLUT_ACTIVE_ALT)
-   //{
-    //  glutDetachMenu(GLUT_RIGHT_BUTTON);
-   //}
-   //else
-  // {
-   //   glutAttachMenu(GLUT_RIGHT_BUTTON);
-   //}
+	//glutSetMenu(theMenu);
+	//if (theModifierState & GLUT_ACTIVE_ALT)
+	//{
+	//  glutDetachMenu(GLUT_RIGHT_BUTTON);
+	//}
+	//else
+	// {
+	//   glutAttachMenu(GLUT_RIGHT_BUTTON);
+	//}
 
-   motion(x, y);
+	motion(x, y);
 }
