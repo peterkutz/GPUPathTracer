@@ -17,8 +17,6 @@ private:
 
 	Sphere* spheres;
 	
-	Ray* rays;
-
 	void createDeviceData();
 	void deleteDeviceData();
 

@@ -45,6 +45,8 @@ Camera* renderCamera;
 
 PathTracer* pathTracer;
 
+#define PATH_TRACER_BITMAP 13
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // forward declarations
@@ -155,7 +157,7 @@ bool initGL() {
 
 	// Create a texture for displaying the render:
 	// TODO: Move to a function.
-	glBindTexture(GL_TEXTURE_2D, 13);
+	glBindTexture(GL_TEXTURE_2D, PATH_TRACER_BITMAP);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -200,7 +202,7 @@ void display() {
 
 
 	// Show the texture:
-	glBindTexture (GL_TEXTURE_2D, 13);
+	glBindTexture (GL_TEXTURE_2D, PATH_TRACER_BITMAP);
 	glBegin (GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
 	glVertex3f (0.0, 1.0, 0.0);
@@ -212,7 +214,7 @@ void display() {
 	glVertex3f (0.0, 0.0, 0.0);
 	glEnd ();
 
-	//write the iteration count to the display
+	// Write the iteration count and other information to the display:
 //	glPushAttrib(GL_LIGHTING_BIT);
 //		glDisable(GL_LIGHTING);
 //		glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -222,18 +224,31 @@ void display() {
 //
 //		glMatrixMode(GL_MODELVIEW);
 //		glLoadIdentity();
+//
+	glColor4f(0.0, 0.0, 0.0, 0.0); // glColor4f affects the texture display color and vice versa. Set it to black here.
 
-		glColor4f(0.0, 0.0, 0.0, 0.0); // glColor4f affects the texture display color and vice versa. Set it to black here.
+	char info[1024];
 
-		glRasterPos2f(.01, 0.01); 
-  
-		char info[1024];
-		sprintf(info, "Iterations: %u", imageReference->passCounter);
-		for (unsigned int i = 0; i < strlen(info); i++){
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
-		}
+	glRasterPos2f(0.01, 0.972); 
+	sprintf(info, "Iterations: %u", imageReference->passCounter);
+	for (unsigned int i = 0; i < strlen(info); i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
+	}
 
-		glColor4f(1.0, 1.0, 1.0, 1.0); // glColor4f affects the texture display color and vice versa, so reset it to white here.
+	glRasterPos2f(0.01, 0.942); 
+	sprintf(info, "Seconds: %u", (int)BasicMath::round(getSecondsElapsed(imageReference))); // BasicMath::round(getSecondsElapsed(imageReference) * 10) / 10
+	for (unsigned int i = 0; i < strlen(info); i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
+	}
+
+	glRasterPos2f(0.01, 0.912); 
+	sprintf(info, "FPS: %u", (int)BasicMath::round(getFramesPerSecond(imageReference))); // BasicMath::round(getFramesPerSecond(imageReference) * 10) / 10
+	for (unsigned int i = 0; i < strlen(info); i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
+	}
+
+	glColor4f(1.0, 1.0, 1.0, 1.0); // glColor4f affects the texture display color and vice versa, so reset it to white here.
+//
 //	glPopAttrib();
 
 

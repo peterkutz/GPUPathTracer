@@ -52,7 +52,7 @@ void PathTracer::reset() {
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
 
-	launch_kernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, rays, image->passCounter, renderCam);
+	launchKernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, image->passCounter, renderCam);
 
 	// TODO: Make a function for this (or a method---maybe Image can just be a class).
 	for (int i = 0; i < image->numPixels; i++) {
@@ -76,8 +76,6 @@ void PathTracer::createDeviceData() {
     // Initialize data:
 
 	Sphere* tempSpheres = new Sphere[numSpheres];
-
-	Ray* tempRays = new Ray[image->numPixels];
 
 
 
@@ -150,17 +148,13 @@ void PathTracer::createDeviceData() {
 
     // Copy to GPU:
 	CUDA_SAFE_CALL( cudaMalloc( (void**)&spheres, numSpheres * sizeof(Sphere) ) );
-	CUDA_SAFE_CALL( cudaMalloc( (void**)&rays, image->numPixels * sizeof(Ray) ) );
     CUDA_SAFE_CALL( cudaMemcpy( spheres, tempSpheres, numSpheres * sizeof(Sphere), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( rays, tempRays, image->numPixels * sizeof(Ray), cudaMemcpyHostToDevice) );
 
     delete [] tempSpheres;
-	delete [] tempRays;
 }
 
 void PathTracer::deleteDeviceData() {
     CUDA_SAFE_CALL( cudaFree( spheres ) );
-    CUDA_SAFE_CALL( cudaFree( rays ) );
 
 }
 

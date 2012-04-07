@@ -28,17 +28,23 @@
 #include <thrust/random.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/functional.h>
+#include <thrust/remove.h>
+
+
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
 #define MAX_TRACE_DEPTH 11 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
+#define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
 #define AIR_IOR 1.000293 // Don't put this here!
 
 // Numeric constants, copied from BasicMath:
 #define PI                    3.1415926535897932384626422832795028841971
 #define TWO_PI				  6.2831853071795864769252867665590057683943
 #define SQRT_OF_ONE_THIRD     0.5773502691896257645091487805019574556476
+
+
 
 
 
@@ -65,41 +71,80 @@ unsigned int hash(unsigned int a) {
     return a;
 }
 
-//E is eye, C is view, U is up
-__global__ void raycast_from_camera_kernel(float3 E, float3 C, float3 U, float2 fov, float2 resolution, int numPixels, Ray* rays, unsigned long seed) {
+__global__ void initializeActivePixelsAndColors(int numPixels, int* activePixels, Color* notAbsorbedColors, Color* accumulatedColors) {
 
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
 	int pixelIndex = BLOCK_SIZE * bx + tx;
 	bool validIndex = (pixelIndex < numPixels);
 
-	//get x and y coordinates of pixel
-	int y = int(pixelIndex/resolution.y);
-	int x = pixelIndex - (y*resolution.y);
-	
-	//generate random jitter offsets for supersampled antialiasing
-	thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(seed) );
-	thrust::uniform_real_distribution<float> uniformDistribution(-.5, .5);
-	float jitterValueX = uniformDistribution(rng); 
-	float jitterValueY = uniformDistribution(rng); 
+	if (validIndex) {
+
+		activePixels[pixelIndex] = pixelIndex;
+		notAbsorbedColors[pixelIndex] = make_float3(1,1,1);
+		accumulatedColors[pixelIndex] = make_float3(0,0,0);
+
+	}
+
+}
+/*
+__global__ void countActivePixels(int numActivePixels, Color* notAbsorbedColors, int* count) {
+	int bx = blockIdx.x;
+	int tx = threadIdx.x;
+	int activePixelIndex = BLOCK_SIZE * bx + tx;
+	bool validIndex = (activePixelIndex < numActivePixels);
 
 	if (validIndex) {
-		float CD = length(C);
 
-		float3 A = cross(C,U);
-		float3 B = cross(A,C);
-		float3 M = E+C;
-		float3 H = (A*float(CD*tan(fov.x*0.5*(PI/180))))/float(length(A)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
-		float3 V = (B*float(CD*tan(-fov.y*0.5*(PI/180))))/float(length(B)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
+		if (notAbsorbedColors[activePixels[activePixelIndex]] > 0) {
+			atomicAdd(count, 1); // TODO: Do a parallel reduction instead!
+		}
+
+	}
+
+}
+
+void resizeActivePixels(int numActivePixels, int* activePixels, int* newActivePixels) {
+
+}
+*/
+
+__global__ void raycastFromCameraKernel(float3 eye, float3 view, float3 up, float2 fov, float2 resolution, int numPixels, Ray* rays, unsigned long seed) {
+
+	int bx = blockIdx.x;
+	int tx = threadIdx.x;
+	int pixelIndex = BLOCK_SIZE * bx + tx;
+	bool validIndex = (pixelIndex < numPixels);
+
+	if (validIndex) {
+
+		//get x and y coordinates of pixel
+		int y = int(pixelIndex/resolution.y);
+		int x = pixelIndex - (y*resolution.y);
+	
+		//generate random jitter offsets for supersampled antialiasing
+		thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(seed) );
+		thrust::uniform_real_distribution<float> uniformDistribution(-0.5, 0.5);
+		float jitterValueX = uniformDistribution(rng); 
+		float jitterValueY = uniformDistribution(rng); 
+
+
+		float lengthOfView = length(view);
+
+		float3 A = cross(view, up);
+		float3 B = cross(A, view);
+		float3 middle = eye + view;
+		float3 horizontal = ( A * float(lengthOfView * tan(fov.x * 0.5 * (PI/180)))) / float(length(A)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
+		float3 vertical = ( B * float(lengthOfView * tan(-fov.y * 0.5 * (PI/180)))) / float(length(B)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
 		
 		float sx = (jitterValueX+x)/(resolution.x-1);
 		float sy = (jitterValueY+y)/(resolution.y-1);
 
-		float3 P = M + (((2*sx)-1)*H) + (((2*sy)-1)*V);
-		float3 PmE = P-E;
+		float3 point = middle + (((2*sx)-1)*horizontal) + (((2*sy)-1)*vertical);
+		float3 eyeToPoint = point - eye;
 
-		rays[pixelIndex].direction = normalize(PmE);
-		rays[pixelIndex].origin = E;
+		rays[pixelIndex].direction = normalize(eyeToPoint);
+		rays[pixelIndex].origin = eye;
 
 		//accumulatedColors[pixelIndex] = rays[pixelIndex].direction;	//test code, should output green/yellow/black/red if correct
 	}
@@ -285,22 +330,24 @@ float3 computeBackgroundColor(const float3 & direction) {
 	return darkSkyBlue * ((dot(direction, normalize(make_float3(-0.5, 0.0, -1.0))) + 1 + 1) / 2);
 }
 
-__global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
+__global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
 
 	// Duplicate code:
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
-	int pixelIndex = BLOCK_SIZE * bx + tx;
-	bool validIndex = (pixelIndex < numPixels);
+	int activePixelIndex = BLOCK_SIZE * bx + tx;
+	bool validActivePixelIndex = (activePixelIndex < numActivePixels);
 
-	thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
-	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
+	if (validActivePixelIndex) { // TODO: Or just return.
 
-	if (validIndex) {
+		// TODO: Restructure this block! It's a mess. Use classes!
 
-		// TODO: Restructure this block! It's a mess. I want classes!
+		int pixelIndex = activePixels[activePixelIndex];
+
+		thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
+		thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
 		// Reusables:
 		float t;
@@ -396,6 +443,12 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 			notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. TODO: Terminate the ray.
 		}
 
+		// To assist Thrust steram compaction, set this activePixel to -1 if the ray weight is now zero:
+		// Brilliant (maybe).
+		if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // Faster: dot product of a vector with itself is the same as its length squared.
+			activePixels[activePixelIndex] = -1;
+		}
+
 		/*
 		// TEST:
 		// Generate a random number:
@@ -414,43 +467,124 @@ __global__ void trace_ray_kernel(int numSpheres, Sphere* spheres, int numPixels,
 
 }
 
+
+
+// http://docs.thrust.googlecode.com/hg/group__counting.html
+// http://docs.thrust.googlecode.com/hg/group__stream__compaction.html
+struct isNegative
+{
+	__host__ __device__ 
+	bool operator()(const int & x) 
+	{
+		return x < 0;
+	}
+};
+
+
+
 extern "C"
-void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, Ray* rays, int counter, Camera* renderCam) {
+void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, int counter, Camera* renderCam) {
 	
+
+
 	// Configure grid and block sizes:
 	int threadsPerBlock = BLOCK_SIZE;
+
 	// Compute the number of blocks required, performing a ceiling operation to make sure there are enough:
-	int blocksPerGrid = (numPixels + threadsPerBlock - 1) / threadsPerBlock;
+	int fullBlocksPerGrid = (numPixels + threadsPerBlock - 1) / threadsPerBlock;
 
 
-	// Initialize color arrays:
-	Color* tempNotAbsorbedColors = (Color*)malloc(numPixels * sizeof(Color));
-	Color* tempAccumulatedColors = (Color*)malloc(numPixels * sizeof(Color));
-	for (int i = 0; i < numPixels; i++) {
-		tempNotAbsorbedColors[i] = make_float3(1,1,1);
-		tempAccumulatedColors[i] = make_float3(0,0,0);
-	}
+
+
+
+	// Declare and allocate active pixels, color arrays, and rays:
+	int* activePixels = NULL;
+	Ray* rays = NULL;
 	Color* notAbsorbedColors = NULL;
 	Color* accumulatedColors = NULL;
+	CUDA_SAFE_CALL( cudaMalloc((void**)&activePixels, numPixels * sizeof(int)) );
+	CUDA_SAFE_CALL( cudaMalloc((void**)&rays, numPixels * sizeof(Ray)) );
 	CUDA_SAFE_CALL( cudaMalloc((void**)&notAbsorbedColors, numPixels * sizeof(Color)) );
 	CUDA_SAFE_CALL( cudaMalloc((void**)&accumulatedColors, numPixels * sizeof(Color)) );
-	CUDA_SAFE_CALL( cudaMemcpy( notAbsorbedColors, tempNotAbsorbedColors, numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
-	CUDA_SAFE_CALL( cudaMemcpy( accumulatedColors, tempAccumulatedColors, numPixels * sizeof(Color), cudaMemcpyHostToDevice) );
-	free(tempNotAbsorbedColors);
-	free(tempAccumulatedColors);
+
+	initializeActivePixelsAndColors<<<fullBlocksPerGrid, threadsPerBlock>>>(numPixels, activePixels, notAbsorbedColors, accumulatedColors);
+
+	int numActivePixels = numPixels;
+
+	// Run this every pass so we can do anti-aliasing using jittering.
+	// If we don't want to re-compute the camera rays, we'll need a separate array for secondary rays.
+	
+	raycastFromCameraKernel<<<fullBlocksPerGrid, threadsPerBlock>>>(renderCam->position, renderCam->view, renderCam->up, renderCam->fov, renderCam->resolution, numPixels, rays, counter);
 
 
-	//only launch raycast from camera kernel if this is the first ever pass!
-	// I think we'll have to run this every pass if we want to do anti-aliasing using jittering.
-	// Also, if we don't want to re-compute the camera rays, we'll need a separate array for secondary rays.
-	//if (counter == 0) {
-	raycast_from_camera_kernel<<<blocksPerGrid, threadsPerBlock>>>(renderCam->position, renderCam->view, renderCam->up, renderCam->fov, renderCam->resolution, numPixels, rays, counter);
-	//}
+
 
 
 	for (int rayDepth = 0; rayDepth < MAX_TRACE_DEPTH; rayDepth++) {
-		trace_ray_kernel<<<blocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numPixels, rays, rayDepth, notAbsorbedColors, accumulatedColors, counter);
+
+		// Compute the number of blocks required, performing a ceiling operation to make sure there are enough:
+		int newBlocksPerGrid = (numActivePixels + threadsPerBlock - 1) / threadsPerBlock; // Duplicate code.
+
+		traceRayKernel<<<newBlocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numActivePixels, activePixels, rays, rayDepth, notAbsorbedColors, accumulatedColors, counter);
+		
+
+
+		// Use Thrust stream compaction to compress activePixels:
+		// http://docs.thrust.googlecode.com/hg/group__stream__compaction.html#ga5fa8f86717696de88ab484410b43829b
+		thrust::device_ptr<int> devicePointer(activePixels);
+		thrust::device_ptr<int> newEnd = thrust::remove_if(devicePointer, devicePointer + numActivePixels, isNegative());
+		numActivePixels = newEnd.get() - activePixels;
+		//std::cout << numActivePixels << std::endl;
+		//break;
+
+
+
+		/*
+		// Compress activePixels:
+		// SUPER SLOW.
+		// TODO: Use custom kernels or thrust to avoid memory copying!!!!!!!!!!!!!!!
+		// TODO: Use parallel reduction for counting, and stream compaction!!!!!!!!!!!!!!!!!!!!
+		// Middle ground alternative: maybe just keep a device array of booleans to mark active pixels, then use that here instead of the heavier notAbsorbedColors.
+		int* tempActivePixels = new int[numActivePixels];
+		Color* tempNotAbsorbedColors = new Color[numPixels];;
+		CUDA_SAFE_CALL( cudaMemcpy( tempActivePixels, activePixels, numActivePixels * sizeof(int), cudaMemcpyDeviceToHost) );
+		CUDA_SAFE_CALL( cudaMemcpy( tempNotAbsorbedColors, notAbsorbedColors, numPixels * sizeof(Color), cudaMemcpyDeviceToHost) );
+		int livingCount = 0;
+		for (int i = 0; i < numActivePixels; i++) {
+			if (length(tempNotAbsorbedColors[tempActivePixels[i]]) > MIN_RAY_WEIGHT) { // TODO: Use a length_squared function for better performance!!!!!!
+				livingCount++;
+			}
+		}
+		int* tempCompressedActivePixels = new int[livingCount];
+		int currentIndex = 0;
+		for (int i = 0; i < numActivePixels; i++) { // Duplicate code. 
+			if (length(tempNotAbsorbedColors[tempActivePixels[i]]) > MIN_RAY_WEIGHT) { // Should be true for exactly the same elements as above.
+				tempCompressedActivePixels[currentIndex] = tempActivePixels[i];
+				currentIndex++;
+			}
+		}
+		CUDA_SAFE_CALL( cudaFree( activePixels ) );
+		CUDA_SAFE_CALL( cudaMalloc((void**)&activePixels, livingCount * sizeof(int)) );
+		CUDA_SAFE_CALL( cudaMemcpy( activePixels, tempCompressedActivePixels, livingCount * sizeof(int), cudaMemcpyHostToDevice) );
+		numActivePixels = livingCount; // Could alternatively do this earlier.
+		//std::cout << livingCount << std::endl; // TEST.
+		delete [] tempActivePixels;
+		delete [] tempNotAbsorbedColors;
+		delete [] tempCompressedActivePixels;
+		*/
+		/*
+		int numNewActivePixels = 0;
+		countActivePixels(numActivePixels, notAbsorbedColors, newNumActivePixels);
+		int* oldActivePixels = activePixels;
+		int* newActivePixels = NULL;
+		CUDA_SAFE_CALL( cudaMalloc((void**)&newActivePixels, numNewActivePixels * sizeof(int)) );
+		refillActivePixels(numActivePixels, oldActivePixels, newActivePixels);
+		CUDA_SAFE_CALL( cudaFree( oldActivePixels ) );
+		*/
+
+
 	}
+
 
 
 
@@ -458,8 +592,13 @@ void launch_kernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels
 	CUDA_SAFE_CALL( cudaMemcpy( pixels, accumulatedColors, numPixels * sizeof(Color), cudaMemcpyDeviceToHost) );
 
 
+
 	// Clean up:
+	// TODO: Save these things for the next iteration!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	CUDA_SAFE_CALL( cudaFree( activePixels ) );
+	CUDA_SAFE_CALL( cudaFree( rays ) );
 	CUDA_SAFE_CALL( cudaFree( notAbsorbedColors ) );
 	CUDA_SAFE_CALL( cudaFree( accumulatedColors ) );
+
 
 }
