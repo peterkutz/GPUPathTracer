@@ -34,10 +34,11 @@
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 11 // TODO: Put settings somewhere else and don't make them defines.
-#define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
+#define MAX_TRACE_DEPTH 16 // TODO: Put settings somewhere else and don't make them defines.
+#define RAY_BIAS_DISTANCE 0.0001 // TODO: Put with other settings somewhere.
 #define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
 #define AIR_IOR 1.000293 // Don't put this here!
+#define HARD_CODED_GROUND_ELEVATION -0.8
 
 // Numeric constants, copied from BasicMath:
 #define PI                    3.1415926535897932384626422832795028841971
@@ -310,23 +311,72 @@ float3 computeReflectionDirection(const float3 & normal, const float3 & incident
 
 __host__ __device__
 float3 computeTransmissionDirection(const float3 & normal, const float3 & incident, float refractiveIndexIncident, float refractiveIndexTransmitted) {
-	return make_float3(0,0,0); // TODO: IMPLEMENT THIS USING SNELL'S LAW!!!
+	// Snell's Law:
+	// Copied from Photorealizer.
+
+	float cosTheta1 = dot(normal, incident);
+
+	float n1_n2 =  refractiveIndexIncident /  refractiveIndexTransmitted;
+
+	float radicand = 1 - pow(n1_n2, 2) * (1 - pow(cosTheta1, 2));
+	if (radicand < 0) return make_float3(0, 0, 0); // Return value???????????????????????????????????????
+	float cosTheta2 = sqrt(radicand);
+
+	if (cosTheta1 > 0) { // normal and incident are on same side of the surface.
+		return n1_n2 * (-1 * incident) + ( n1_n2 * cosTheta1 - cosTheta2 ) * normal;
+	} else { // normal and incident are on opposite sides of the surface.
+		return n1_n2 * (-1 * incident) + ( n1_n2 * cosTheta1 + cosTheta2 ) * normal;
+	}
+
 }
 
 __host__ __device__
 Fresnel computeFresnel(const float3 & normal, const float3 & incident, float refractiveIndexIncident, float refractiveIndexTransmitted, const float3 & reflectionDirection, const float3 & transmissionDirection) {
-	// Shlick's approximation including expression for R0 found at http://www.bramz.net/data/writings/reflection_transmission.pdf
-	// TODO: IMPLEMENT ACTUAL FRESNEL EQUATIONS, OR THE FULL SCHLICK'S APPROXIMATION WITH TRANSMISSION (BASED ON THE LINK ABOVE)!!!
 	Fresnel fresnel;
+
+
+	
+	// First, check for total internal reflection:
+	if ( length(transmissionDirection) <= 0.12345 || dot(normal, transmissionDirection) > 0 ) { // The length == 0 thing is how we're handling TIR right now.
+		// Total internal reflection!
+		fresnel.reflectionCoefficient = 1;
+		fresnel.transmissionCoefficient = 0;
+		return fresnel;
+	}
+
+
+
+	// Real Fresnel equations:
+	// Copied from Photorealizer.
+	float cosThetaIncident = dot(normal, incident);
+	float cosThetaTransmitted = dot(-1 * normal, transmissionDirection);
+	float reflectionCoefficientSPolarized = pow(   (refractiveIndexIncident * cosThetaIncident - refractiveIndexTransmitted * cosThetaTransmitted)   /   (refractiveIndexIncident * cosThetaIncident + refractiveIndexTransmitted * cosThetaTransmitted)   , 2);
+    float reflectionCoefficientPPolarized = pow(   (refractiveIndexIncident * cosThetaTransmitted - refractiveIndexTransmitted * cosThetaIncident)   /   (refractiveIndexIncident * cosThetaTransmitted + refractiveIndexTransmitted * cosThetaIncident)   , 2);
+	float reflectionCoefficientUnpolarized = (reflectionCoefficientSPolarized + reflectionCoefficientPPolarized) / 2.0; // Equal mix.
+	//
+	fresnel.reflectionCoefficient = reflectionCoefficientUnpolarized;
+	fresnel.transmissionCoefficient = 1 - fresnel.reflectionCoefficient;
+	return fresnel;
+
+
+	// Shlick's approximation including expression for R0 and modification for transmission found at http://www.bramz.net/data/writings/reflection_transmission.pdf
+	// TODO: IMPLEMENT ACTUAL FRESNEL EQUATIONS!
 	float R0 = pow( (refractiveIndexIncident - refractiveIndexTransmitted) / (refractiveIndexIncident + refractiveIndexTransmitted), 2 ); // For Schlick's approximation.
-	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - dot(normal, incident), 5.0);
+	float cosTheta;
+	if (refractiveIndexIncident <= refractiveIndexTransmitted) {
+		cosTheta = dot(normal, incident);
+	} else {
+		cosTheta = dot(-1 * normal, transmissionDirection); // ???
+	}
+	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - cosTheta, 5); // Costly pow function might make this slower than actual Fresnel equations. TODO: USE ACTUAL FRESNEL EQUATIONS!
 	fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
 	return fresnel;
+
 }
 
 __host__ __device__
 float3 computeBackgroundColor(const float3 & direction) {
-	float3 darkSkyBlue = make_float3(0.15, 0.25, 0.4); // Dark grayish-blue.
+	float3 darkSkyBlue = make_float3(0.15, 0.25, 0.4) * 0.5; // Dark grayish-blue.
 	return darkSkyBlue * ((dot(direction, normalize(make_float3(-0.5, 0.0, -1.0))) + 1 + 1) / 2);
 }
 
@@ -338,32 +388,32 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
 	int activePixelIndex = BLOCK_SIZE * bx + tx;
-	bool validActivePixelIndex = (activePixelIndex < numActivePixels);
+	if (activePixelIndex >= numActivePixels) return;
 
-	if (validActivePixelIndex) { // TODO: Or just return.
+	// TODO: Restructure stuff! It's a mess. Use classes!
 
-		// TODO: Restructure this block! It's a mess. Use classes!
+	int pixelIndex = activePixels[activePixelIndex];
+	Ray currentRay = rays[pixelIndex];
 
-		int pixelIndex = activePixels[activePixelIndex];
+	thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
+	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
-		thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
-		thrust::uniform_real_distribution<float> uniformDistribution(0,1);
+	float bestT = 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
+	float3 bestIntersectionPoint;// = make_float3(0,0,0);
+	float3 bestNormal;// = make_float3(0,0,0);
+	bool bestIsGroundPlane = false;
+	bool bestIsSphere = false;
+	int bestSphereIndex = -1;
+
+	if (true) { // Test. I did this to contain the local variables to isolate a bug (I suspected that I was using one of these local variables below by mistake, so scoping them caused a helpful compiler error to tell me where). But now I'm also wondering if those local variables just sit there and waste registers if they don't go out of scope.
 
 		// Reusables:
 		float t;
 		float3 intersectionPoint;
 		float3 normal;
 
-		float bestT = 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
-		float3 bestIntersectionPoint;// = make_float3(0,0,0);
-		float3 bestNormal;// = make_float3(0,0,0);
-		bool bestIsGroundPlane = false;
-		bool bestIsSphere = false;
-		int bestSphereIndex = -1;
-
 		// Check for ground plane intersection:
-		float hardCodedGroundPlaneElevation = -0.8; // TODO: Put with other settings somewhere.
-		t = findGroundPlaneIntersection(hardCodedGroundPlaneElevation, rays[pixelIndex], intersectionPoint, normal); // 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
+		t = findGroundPlaneIntersection(HARD_CODED_GROUND_ELEVATION, currentRay, intersectionPoint, normal); // 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
 		if (t > 0) { // No "<" conditional only because this is being tested before anythign else.
 			bestT = t;
 			bestIntersectionPoint = intersectionPoint;
@@ -375,7 +425,7 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 		
 		// Check for sphere intersection:
 		for (int i = 0; i < numSpheres; i++) {
-			t = findSphereIntersection(spheres[i], rays[pixelIndex], intersectionPoint, normal);
+			t = findSphereIntersection(spheres[i], currentRay, intersectionPoint, normal);
 			if (t > 0 && t < bestT) {
 				bestT = t;
 				bestIntersectionPoint = intersectionPoint;
@@ -388,82 +438,115 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 			}
 		}
 
-		if (bestIsGroundPlane || bestIsSphere) {
+	}
 
-			// TEST:
-			Material bestMaterial;
-			if (bestIsGroundPlane) {
-				Material hardCodedGroundMaterial; // = makeEmptyMaterial();
-				hardCodedGroundMaterial.diffuseColor = make_float3(0.455, 0.43, 0.39);
-				hardCodedGroundMaterial.emittedColor = make_float3(0,0,0);
-				hardCodedGroundMaterial.specularRefractiveIndex = 0;
-				hardCodedGroundMaterial.hasTransmission = false;
-				bestMaterial = hardCodedGroundMaterial;
-			} else if (bestIsSphere) {
-				bestMaterial = spheres[bestSphereIndex].material;
-			}
+	if (bestIsGroundPlane || bestIsSphere) {
 
-
-
-			// TEST:
-			// TODO: Reduce duplicate code and memory usage here and in the functions called here.
-			// TODO: Finish implementing the functions called here.
-			float3 incident = -rays[pixelIndex].direction;
-			float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
-			float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, AIR_IOR, bestMaterial.specularRefractiveIndex); // TODO: Detect total internal reflection!!!
-			float3 biasVector = ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted!!!
-			float rouletteRandomFloat = uniformDistribution(rng);
-			if (bestMaterial.specularRefractiveIndex > 1.0 && rouletteRandomFloat < computeFresnel(bestNormal, incident, AIR_IOR, bestMaterial.specularRefractiveIndex, reflectionDirection, transmissionDirection).reflectionCoefficient) {
-				// Ray reflected from the surface. Trace a ray in the reflection direction.
-
-				// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
-				notAbsorbedColors[pixelIndex] *= bestMaterial.specularColor;
-
-				rays[pixelIndex].origin = bestIntersectionPoint + biasVector;
-				rays[pixelIndex].direction = reflectionDirection;
-			} else {
-				// Ray did not reflect from the surface, so consider emission and take a diffuse sample.
-
-				// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
-				accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * bestMaterial.emittedColor;
-				notAbsorbedColors[pixelIndex] *= bestMaterial.diffuseColor;
-
-				// Choose a new ray direction:
-				float randomFloat1 = uniformDistribution(rng); 
-				float randomFloat2 = uniformDistribution(rng); 
-				float3 newRayDirection = cosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
-				rays[pixelIndex].origin = bestIntersectionPoint + biasVector;
-				rays[pixelIndex].direction = newRayDirection;
-			}
-
-		} else {
-			// Ray didn't hit an object, so sample the background and terminate the ray.
-
-			accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * computeBackgroundColor(rays[pixelIndex].direction);
-			notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. TODO: Terminate the ray.
+		// TEST:
+		Material bestMaterial;
+		if (bestIsGroundPlane) {
+			Material hardCodedGroundMaterial; // = makeEmptyMaterial();
+			hardCodedGroundMaterial.diffuseColor = make_float3(0.455, 0.43, 0.39);
+			hardCodedGroundMaterial.emittedColor = make_float3(0,0,0);
+			hardCodedGroundMaterial.specularColor = make_float3(0,0,0);
+			hardCodedGroundMaterial.specularRefractiveIndex = 0;
+			hardCodedGroundMaterial.hasTransmission = false;
+			bestMaterial = hardCodedGroundMaterial;
+		} else if (bestIsSphere) {
+			bestMaterial = spheres[bestSphereIndex].material;
 		}
 
-		// To assist Thrust steram compaction, set this activePixel to -1 if the ray weight is now zero:
-		// Brilliant (maybe).
+
+
+		// TEST:
+		// TODO: Reduce duplicate code and memory usage here and in the functions called here.
+		// TODO: Finish implementing the functions called here.
+		// TODO: Clean all of this up!
+		float3 incident = -currentRay.direction;
+
+		float incidentIOR = AIR_IOR;
+		float transmittedIOR = bestMaterial.specularRefractiveIndex;
+
+		bool backFace = ( dot(bestNormal, incident) < 0 );
+
+		if (backFace) {
+			// Flip the normal:
+			bestNormal *= -1;
+			// Swap the IORs:
+			// TODO: Use the BasicMath swap function if possible on the device.
+			float tempIOR = incidentIOR;
+			incidentIOR = transmittedIOR;
+			transmittedIOR = tempIOR;
+		}
+
+		float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
+		float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, incidentIOR, transmittedIOR);
+
+//		// MOVED:
+//		// Detect total internal reflection!!!
+//		bool totalInternalReflection = ( dot(bestNormal, transmissionDirection) > 0 ); // Currently overrides Fresnel, but TODO: we should really change the Fresnel reflectance to 1 in this case.
+
+		float3 biasVector = ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted!!!
+
+		bool doSpecular = ( bestMaterial.specularRefractiveIndex > 1.0 ); // TODO: Move?
+		float rouletteRandomFloat = uniformDistribution(rng);
+		// TODO: Fix long conditional, and maybe lots of temporary variables.
+		// TODO: Optimize total internal reflection case (no random number necessary in that case).
+		bool reflectFromSurface = ( doSpecular && rouletteRandomFloat < computeFresnel(bestNormal, incident, incidentIOR, transmittedIOR, reflectionDirection, transmissionDirection).reflectionCoefficient );
+		if (reflectFromSurface) {
+			// Ray reflected from the surface. Trace a ray in the reflection direction.
+
+			// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
+			notAbsorbedColors[pixelIndex] *= bestMaterial.specularColor;
+
+			Ray nextRay;
+			nextRay.origin = bestIntersectionPoint + biasVector;
+			nextRay.direction = reflectionDirection;
+			rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
+		} else if (bestMaterial.hasTransmission) {
+			// Ray transmitted and refracted.
+
+			Ray nextRay;
+			nextRay.origin = bestIntersectionPoint - biasVector; // Bias ray in the other direction because it's transmitted!!!
+			nextRay.direction = transmissionDirection;
+			rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
+		} else {
+			// Ray did not reflect from the surface, so consider emission and take a diffuse sample.
+
+			// TODO: Use Russian roulette instead of simple multipliers! (Selecting between diffuse sample and no sample (absorption) in this case.)
+			accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * bestMaterial.emittedColor;
+			notAbsorbedColors[pixelIndex] *= bestMaterial.diffuseColor;
+
+			// Choose a new ray direction:
+			float randomFloat1 = uniformDistribution(rng); 
+			float randomFloat2 = uniformDistribution(rng); 
+			Ray nextRay;
+			nextRay.origin = bestIntersectionPoint + biasVector;
+			nextRay.direction = cosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
+			rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
+		}
+
+
+		// To assist Thrust stream compaction, set this activePixel to -1 if the ray weight is now zero:
 		if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // Faster: dot product of a vector with itself is the same as its length squared.
 			activePixels[activePixelIndex] = -1;
 		}
 
-		/*
-		// TEST:
-		// Generate a random number:
-		// TODO: Generate more random numbers at a time to speed this up significantly!
-		float randomFloat = uniformDistribution(rng); 
+	} else {
+		// Ray didn't hit an object, so sample the background and terminate the ray.
 
-		if (randomFloat < 0.5) {
-			accumulatedColors[pixelIndex] = rays[pixelIndex].direction;
-		} else {
-			accumulatedColors[pixelIndex] = make_float3(0,0,0);
-		}
-		*/
+		accumulatedColors[pixelIndex] += notAbsorbedColors[pixelIndex] * computeBackgroundColor(currentRay.direction);
+		//notAbsorbedColors[pixelIndex] = make_float3(0,0,0); // The ray now has zero weight. // TODO: Remove this? This isn't even necessary because we know the ray will be terminated anyway.
 
-
+		activePixels[activePixelIndex] = -1; // To assist Thrust stream compaction, set this activePixel to -1 because the ray weight is now zero.
 	}
+
+	// MOVED:
+	//// To assist Thrust stream compaction, set this activePixel to -1 if the ray weight is now zero:
+	//if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // Faster: dot product of a vector with itself is the same as its length squared.
+	//	activePixels[activePixelIndex] = -1;
+	//}
+
 
 }
 

@@ -16,7 +16,7 @@ ViewCamera::ViewCamera()
 {   
 	centerPosition = glm::vec3(0,0,0);
 	yaw = 0;
-	pitch = 0;
+	pitch = 0.3;
 	radius = 4;
 	resolution = glm::vec2(512,512);
 	fov = glm::vec2(40, 40);
@@ -46,7 +46,7 @@ void ViewCamera::setResolution(float x, float y){
 
 void ViewCamera::setFOVX(float fovx){
 	fov.x = fovx;
-	fov.y = (fov.x*resolution.y)/resolution.x;
+	fov.y = (fov.x*resolution.y)/resolution.x; // TODO: Fix this! It's not correct.
 }
 
 void ViewCamera::buildRenderCam(Camera* renderCam){
