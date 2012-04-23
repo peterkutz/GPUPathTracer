@@ -141,7 +141,7 @@ void PathTracer::createDeviceData() {
 
 	tempSpheres[3].position = make_float3(1.5, 1.6, -2.3);
 	tempSpheres[3].radius = 0.4;
-	tempSpheres[3].material = light;
+	tempSpheres[3].material = green;
 
 	tempSpheres[4].position = make_float3(-1.0, -0.7, 1.2);
 	tempSpheres[4].radius = 0.1;
@@ -149,7 +149,7 @@ void PathTracer::createDeviceData() {
 
 	tempSpheres[5].position = make_float3(-0.5, -0.7, 1.7);
 	tempSpheres[5].radius = 0.1;
-	tempSpheres[5].material = light;
+	tempSpheres[5].material = steel;
 
 	tempSpheres[6].position = make_float3(0.3, -0.7, 1.4);
 	tempSpheres[6].radius = 0.1;

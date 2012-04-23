@@ -35,7 +35,7 @@
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
 #define MAX_TRACE_DEPTH 16 // TODO: Put settings somewhere else and don't make them defines.
-#define RAY_BIAS_DISTANCE 0.0001 // TODO: Put with other settings somewhere.
+#define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 #define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
 #define AIR_IOR 1.000293 // Don't put this here!
 #define HARD_CODED_GROUND_ELEVATION -0.8
@@ -376,8 +376,10 @@ Fresnel computeFresnel(const float3 & normal, const float3 & incident, float ref
 
 __host__ __device__
 float3 computeBackgroundColor(const float3 & direction) {
-	float3 darkSkyBlue = make_float3(0.15, 0.25, 0.4) * 0.5; // Dark grayish-blue.
-	return darkSkyBlue * ((dot(direction, normalize(make_float3(-0.5, 0.0, -1.0))) + 1 + 1) / 2);
+	float position = (dot(direction, normalize(make_float3(-0.5, 0.5, -1.0))) + 1) / 2;
+	float3 firstColor = make_float3(0.15, 0.3, 0.5); // Bluish.
+	float3 secondColor = make_float3(1.0, 1.0, 1.0); // White.
+	return (1 - position) * firstColor + position * secondColor;
 }
 
 __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
