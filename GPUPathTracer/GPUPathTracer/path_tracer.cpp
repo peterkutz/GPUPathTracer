@@ -67,7 +67,7 @@ Image* PathTracer::render() {
 
 void PathTracer::setUpScene() {
 
-	numSpheres = 9; // TODO: Move this!
+	numSpheres = 15; // TODO: Move this!
 
 }
 
@@ -82,87 +82,150 @@ void PathTracer::createDeviceData() {
 
 	// TEMPORARY hard-coded spheres:
 
-	Material red = makeEmptyMaterial();
+	Material red;
+	SET_DEFAULT_MATERIAL_PROPERTIES(red);
 	red.diffuseColor = make_float3(0.87, 0.15, 0.15);
 	red.specularColor = make_float3(1, 1, 1);
-	red.specularRefractiveIndex = 1.491; // Acrylic.
+	red.medium.refractiveIndex = 1.491; // Acrylic.
 
-	Material green = makeEmptyMaterial();
+	Material green;
+	SET_DEFAULT_MATERIAL_PROPERTIES(green);
 	green.diffuseColor = make_float3(0.15, 0.87, 0.15);
 	green.specularColor = make_float3(1, 1, 1);
-	green.specularRefractiveIndex = 1.491; // Acrylic.
+	green.medium.refractiveIndex = 1.491; // Acrylic.
 
-	Material orange = makeEmptyMaterial();
+	Material orange;
+	SET_DEFAULT_MATERIAL_PROPERTIES(orange);
 	orange.diffuseColor = make_float3(0.93, 0.33, 0.04);
 	orange.specularColor = make_float3(1, 1, 1);
-	orange.specularRefractiveIndex = 1.491; // Acrylic.
+	orange.medium.refractiveIndex = 1.491; // Acrylic.
 
-	Material purple = makeEmptyMaterial();
+	Material purple;
+	SET_DEFAULT_MATERIAL_PROPERTIES(purple);
 	purple.diffuseColor = make_float3(0.5, 0.1, 0.9);
 	purple.specularColor = make_float3(1, 1, 1);
-	purple.specularRefractiveIndex = 1.491; // Acrylic.
+	purple.medium.refractiveIndex = 1.491; // Acrylic.
 
-	Material glass = makeEmptyMaterial();
+	Material glass;
+	SET_DEFAULT_MATERIAL_PROPERTIES(glass);
 	glass.specularColor = make_float3(1, 1, 1);
-	glass.specularRefractiveIndex = 1.62; // Typical flint.
+	glass.medium.refractiveIndex = 1.62; // Typical flint.
 	glass.hasTransmission = true;
 
-	Material white = makeEmptyMaterial();
+	Material greenGlass;
+	SET_DEFAULT_MATERIAL_PROPERTIES(greenGlass);
+	greenGlass.specularColor = make_float3(1, 1, 1);
+	greenGlass.hasTransmission = true;
+	greenGlass.medium.refractiveIndex = 1.62;
+	greenGlass.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(1.0, 0.01, 1.0);
+
+	Material marble;
+	SET_DEFAULT_MATERIAL_PROPERTIES(marble);
+	marble.specularColor = make_float3(1, 1, 1);
+	marble.hasTransmission = true;
+	marble.medium.refractiveIndex = 1.486;
+	marble.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(0.6, 0.6, 0.6);
+	marble.medium.absorptionAndScatteringProperties.reducedScatteringCoefficient = 8.0;
+
+	Material something;
+	SET_DEFAULT_MATERIAL_PROPERTIES(something);
+	something.specularColor = make_float3(1, 1, 1);
+	something.hasTransmission = true;
+	something.medium.refractiveIndex = 1.333;
+	something.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(0.9, 0.3, 0.02);
+	something.medium.absorptionAndScatteringProperties.reducedScatteringCoefficient = 2.0;
+
+	Material ketchup;
+	SET_DEFAULT_MATERIAL_PROPERTIES(ketchup);
+	ketchup.specularColor = make_float3(1, 1, 1);
+	ketchup.hasTransmission = true;
+	ketchup.medium.refractiveIndex = 1.350;
+	ketchup.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(0.02, 5.1, 5.7); // 
+	ketchup.medium.absorptionAndScatteringProperties.reducedScatteringCoefficient = 9.0;
+
+	Material white;
+	SET_DEFAULT_MATERIAL_PROPERTIES(white);
 	white.diffuseColor = make_float3(0.9, 0.9, 0.9);
 	white.emittedColor = make_float3(0, 0, 0);
 
-	Material gold = makeEmptyMaterial();
+	Material gold;
+	SET_DEFAULT_MATERIAL_PROPERTIES(gold);
 	gold.diffuseColor = make_float3(0, 0, 0);
 	gold.emittedColor = make_float3(0, 0, 0);
 	gold.specularColor = make_float3(0.869, 0.621, 0.027);
-	gold.specularRefractiveIndex = 1000.0; // TODO: Make metal option or something!
+	gold.medium.refractiveIndex = 1000.0; // TODO: Make metal option or something!
 
-	Material steel = makeEmptyMaterial();
+	Material steel;
+	SET_DEFAULT_MATERIAL_PROPERTIES(steel);
 	steel.diffuseColor = make_float3(0, 0, 0);
 	steel.emittedColor = make_float3(0, 0, 0);
 	steel.specularColor = make_float3(0.89, 0.89, 0.89);
-	steel.specularRefractiveIndex = 1000.0; // TODO: Make metal option or something!
+	steel.medium.refractiveIndex = 1000.0; // TODO: Make metal option or something!
 
-	Material light = makeEmptyMaterial();
+	Material light;
+	SET_DEFAULT_MATERIAL_PROPERTIES(light);
 	light.diffuseColor = make_float3(0, 0, 0);
-	light.emittedColor = make_float3(10, 10, 9);
+	light.emittedColor = make_float3(13, 13, 11);
 
 	tempSpheres[0].position = make_float3(-0.9, 0, -0.9);
 	tempSpheres[0].radius = 0.8;
-	tempSpheres[0].material = purple;
+	tempSpheres[0].material = something;
 
 	tempSpheres[1].position = make_float3(0.8, 0, -0.4);
 	tempSpheres[1].radius = 0.8;
-	tempSpheres[1].material = glass;
+	tempSpheres[1].material = ketchup;
 
 	tempSpheres[2].position = make_float3(-0.5, -0.4, 1.0);
 	tempSpheres[2].radius = 0.4;
-	tempSpheres[2].material = glass;
+	tempSpheres[2].material = marble;
 
-	tempSpheres[3].position = make_float3(1.5, 1.6, -2.3);
+	tempSpheres[3].position = make_float3(0.8, 1.2, -0.4);
 	tempSpheres[3].radius = 0.4;
-	tempSpheres[3].material = green;
+	tempSpheres[3].material = ketchup;
 
 	tempSpheres[4].position = make_float3(-1.0, -0.7, 1.2);
 	tempSpheres[4].radius = 0.1;
-	tempSpheres[4].material = steel;
+	tempSpheres[4].material = marble;
 
 	tempSpheres[5].position = make_float3(-0.5, -0.7, 1.7);
 	tempSpheres[5].radius = 0.1;
-	tempSpheres[5].material = steel;
+	tempSpheres[5].material = marble;
 
 	tempSpheres[6].position = make_float3(0.3, -0.7, 1.4);
 	tempSpheres[6].radius = 0.1;
-	tempSpheres[6].material = steel;
+	tempSpheres[6].material = marble;
 
 	tempSpheres[7].position = make_float3(-0.1, -0.7, 0.1);
 	tempSpheres[7].radius = 0.1;
-	tempSpheres[7].material = steel;
+	tempSpheres[7].material = marble;
 
 	tempSpheres[8].position = make_float3(0.9, -0.5, 1.3);
 	tempSpheres[8].radius = 0.3;
-	tempSpheres[8].material = orange;
+	tempSpheres[8].material = greenGlass;
 
+	tempSpheres[9].position = make_float3(0.2, -0.55, 0.7);
+	tempSpheres[9].radius = 0.25;
+	tempSpheres[9].material = marble;
+
+	tempSpheres[10].position = make_float3(0.8, 1.8, -0.4);
+	tempSpheres[10].radius = 0.2;
+	tempSpheres[10].material = ketchup;
+
+	tempSpheres[11].position = make_float3(0.8, 2.1, -0.4);
+	tempSpheres[11].radius = 0.1;
+	tempSpheres[11].material = ketchup;
+
+	tempSpheres[12].position = make_float3(0.8, 2.25, -0.4);
+	tempSpheres[12].radius = 0.05;
+	tempSpheres[12].material = ketchup;
+
+	tempSpheres[13].position = make_float3(0.8, 2.325, -0.4);
+	tempSpheres[13].radius = 0.025;
+	tempSpheres[13].material = ketchup;
+
+	tempSpheres[14].position = make_float3(-4.0, 15.0, 0.0);
+	tempSpheres[14].radius = 6.0;
+	tempSpheres[14].material = light;
 
 
 

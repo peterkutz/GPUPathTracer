@@ -180,10 +180,12 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="cutil_math.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="medium.h" />
     <ClInclude Include="path_tracer.h" />
     <ClInclude Include="path_tracer_kernel.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="sphere.h" />
+    <ClInclude Include="absorption_and_scattering_properties.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="view_camera.h" />
     <ClInclude Include="windows_include.h" />

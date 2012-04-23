@@ -297,7 +297,7 @@ void motion(int x, int y)
 		}
 		else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
 		{
-			viewCamera->changeRadius(-deltaY * 0.01);
+			viewCamera->changeAltitude(-deltaY * 0.01);
 		}    
 
 		if (theButtonState == GLUT_RIGHT_BUTTON) // camera move

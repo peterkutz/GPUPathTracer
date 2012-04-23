@@ -22,6 +22,8 @@
 #include "ray.h"
 #include "camera.h"
 #include "fresnel.h"
+#include "medium.h"
+#include "absorption_and_scattering_properties.h"
 
 #include "cuda_safe_call.h"
 
@@ -34,16 +36,17 @@
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 16 // TODO: Put settings somewhere else and don't make them defines.
+#define MAX_TRACE_DEPTH 40 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 #define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
-#define AIR_IOR 1.000293 // Don't put this here!
 #define HARD_CODED_GROUND_ELEVATION -0.8
+
 
 // Numeric constants, copied from BasicMath:
 #define PI                    3.1415926535897932384626422832795028841971
 #define TWO_PI				  6.2831853071795864769252867665590057683943
 #define SQRT_OF_ONE_THIRD     0.5773502691896257645091487805019574556476
+#define E                     2.7182818284590452353602874713526624977572
 
 
 
@@ -72,7 +75,7 @@ unsigned int hash(unsigned int a) {
     return a;
 }
 
-__global__ void initializeActivePixelsAndColors(int numPixels, int* activePixels, Color* notAbsorbedColors, Color* accumulatedColors) {
+__global__ void initializeThings(int numPixels, int* activePixels, AbsorptionAndScatteringProperties* absorptionAndScattering, Color* notAbsorbedColors, Color* accumulatedColors) {
 
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
@@ -82,6 +85,7 @@ __global__ void initializeActivePixelsAndColors(int numPixels, int* activePixels
 	if (validIndex) {
 
 		activePixels[pixelIndex] = pixelIndex;
+		SET_TO_AIR_ABSORPTION_AND_SCATTERING_PROPERTIES(absorptionAndScattering[pixelIndex]);
 		notAbsorbedColors[pixelIndex] = make_float3(1,1,1);
 		accumulatedColors[pixelIndex] = make_float3(0,0,0);
 
@@ -152,15 +156,18 @@ __global__ void raycastFromCameraKernel(float3 eye, float3 view, float3 up, floa
 }
 
 
+__host__ __device__
+float3 positionAlongRay(const Ray & ray, float t) {
+	return ray.origin + t * ray.direction;
+}
+
 
 __host__ __device__
-float findGroundPlaneIntersection(float elevation, const Ray & ray, float3 & intersectionPoint, float3 & normal) {
+float findGroundPlaneIntersection(float elevation, const Ray & ray, float3 & normal) {
 
 	if (ray.direction.y != 0) {
 
 		double t = (elevation - ray.origin.y) / ray.direction.y;
-	
-		intersectionPoint = ray.origin + t * ray.direction;
 
 		if (ray.direction.y < 0) { // Top of plane.
 			normal = make_float3(0, 1, 0);
@@ -180,11 +187,11 @@ float findGroundPlaneIntersection(float elevation, const Ray & ray, float3 & int
 
 __host__ __device__
 //assumes that ray is already transformed into sphere's object space, returns -1 if no intersection
-float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & intersectionPoint, float3 & normal) {
+float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & normal) {
 
 
 
-
+	// Copied from Photorealizer and modified.
 	// Based on math at http://en.wikipedia.org/wiki/Ray_tracing_%28graphics%29
 
 	float3 v = ray.origin - sphere.position; // Sphere position relative to ray origin.
@@ -206,7 +213,7 @@ float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & in
 		t = max(t1, t2);
 	}
 
-	intersectionPoint = ray.origin + t * ray.direction;
+	float3 intersectionPoint = positionAlongRay(ray, t);
 	normal = normalize(intersectionPoint - sphere.position);
 	return t;
 
@@ -281,10 +288,10 @@ float findSphereIntersection(const Sphere & sphere, const Ray & ray, float3 & in
 }
 
 __host__ __device__
-float3 cosineWeightedDirectionInHemisphere(const float3 & normal, float xi1, float xi2) {
+float3 randomCosineWeightedDirectionInHemisphere(const float3 & normal, float xi1, float xi2) {
 
     float up = sqrt(xi1); // cos(theta)
-    float over = sqrt(1.0 - up * up); // sin(theta)
+    float over = sqrt(1 - up * up); // sin(theta)
     float around = xi2 * TWO_PI;
 
 	// Find any two perpendicular directions:
@@ -301,6 +308,17 @@ float3 cosineWeightedDirectionInHemisphere(const float3 & normal, float xi1, flo
 	float3 perpendicular2 =            cross(normal, perpendicular1); // Normalized by default.
   
     return ( up * normal ) + ( cos(around) * over * perpendicular1 ) + ( sin(around) * over * perpendicular2 );
+
+}
+
+__host__ __device__
+float3 randomDirectionInSphere(float xi1, float xi2) {
+
+    float up = xi1 * 2 - 1; // cos(theta)
+    float over = sqrt(1 - up * up); // sin(theta)
+    float around = xi2 * TWO_PI;
+
+    return make_float3( up, cos(around) * over, sin(around) * over );
 
 }
 
@@ -357,8 +375,8 @@ Fresnel computeFresnel(const float3 & normal, const float3 & incident, float ref
 	fresnel.reflectionCoefficient = reflectionCoefficientUnpolarized;
 	fresnel.transmissionCoefficient = 1 - fresnel.reflectionCoefficient;
 	return fresnel;
-
-
+	
+	/*
 	// Shlick's approximation including expression for R0 and modification for transmission found at http://www.bramz.net/data/writings/reflection_transmission.pdf
 	// TODO: IMPLEMENT ACTUAL FRESNEL EQUATIONS!
 	float R0 = pow( (refractiveIndexIncident - refractiveIndexTransmitted) / (refractiveIndexIncident + refractiveIndexTransmitted), 2 ); // For Schlick's approximation.
@@ -371,18 +389,30 @@ Fresnel computeFresnel(const float3 & normal, const float3 & incident, float ref
 	fresnel.reflectionCoefficient = R0 + (1.0 - R0) * pow(1.0 - cosTheta, 5); // Costly pow function might make this slower than actual Fresnel equations. TODO: USE ACTUAL FRESNEL EQUATIONS!
 	fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
 	return fresnel;
+	*/
 
 }
 
 __host__ __device__
-float3 computeBackgroundColor(const float3 & direction) {
+Color computeBackgroundColor(const float3 & direction) {
 	float position = (dot(direction, normalize(make_float3(-0.5, 0.5, -1.0))) + 1) / 2;
-	float3 firstColor = make_float3(0.15, 0.3, 0.5); // Bluish.
-	float3 secondColor = make_float3(1.0, 1.0, 1.0); // White.
-	return (1 - position) * firstColor + position * secondColor;
+	Color firstColor = make_float3(0.15, 0.3, 0.5); // Bluish.
+	Color secondColor = make_float3(1.0, 1.0, 1.0); // White.
+	Color interpolatedColor = (1 - position) * firstColor + position * secondColor;
+	float radianceMultiplier = 0.3;
+	return interpolatedColor * radianceMultiplier;
 }
 
-__global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
+__host__ __device__
+Color computeTransmission(Color absorptionCoefficient, float distance) {
+	Color transmitted;
+	transmitted.x = pow((float)E, (float)(-1 * absorptionCoefficient.x * distance));
+	transmitted.y = pow((float)E, (float)(-1 * absorptionCoefficient.y * distance));
+	transmitted.z = pow((float)E, (float)(-1 * absorptionCoefficient.z * distance));
+	return transmitted;
+}
+
+__global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, AbsorptionAndScatteringProperties* absorptionAndScattering, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
 
@@ -401,58 +431,106 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
 	float bestT = 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
-	float3 bestIntersectionPoint;// = make_float3(0,0,0);
 	float3 bestNormal;// = make_float3(0,0,0);
 	bool bestIsGroundPlane = false;
 	bool bestIsSphere = false;
 	int bestSphereIndex = -1;
 
-	if (true) { // Test. I did this to contain the local variables to isolate a bug (I suspected that I was using one of these local variables below by mistake, so scoping them caused a helpful compiler error to tell me where). But now I'm also wondering if those local variables just sit there and waste registers if they don't go out of scope.
+	//if (true) { // Test. I did this to contain the local variables to isolate a bug (I suspected that I was using one of these local variables below by mistake, so scoping them caused a helpful compiler error to tell me where). But now I'm also wondering if those local variables just sit there and waste registers if they don't go out of scope.
 
-		// Reusables:
-		float t;
-		float3 intersectionPoint;
-		float3 normal;
+	// Reusables:
+	float t;
+	float3 normal;
 
-		// Check for ground plane intersection:
-		t = findGroundPlaneIntersection(HARD_CODED_GROUND_ELEVATION, currentRay, intersectionPoint, normal); // 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
-		if (t > 0) { // No "<" conditional only because this is being tested before anythign else.
+	// Check for ground plane intersection:
+	t = findGroundPlaneIntersection(HARD_CODED_GROUND_ELEVATION, currentRay, normal); // 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
+	if (t > 0) { // No "<" conditional only because this is being tested before anything else.
+		bestT = t;
+		bestNormal = normal;
+
+		bestIsGroundPlane = true;
+		bestIsSphere = false;
+	}
+		
+	// Check for sphere intersection:
+	for (int i = 0; i < numSpheres; i++) {
+		t = findSphereIntersection(spheres[i], currentRay, normal);
+		if (t > 0 && t < bestT) {
 			bestT = t;
-			bestIntersectionPoint = intersectionPoint;
 			bestNormal = normal;
 
-			bestIsGroundPlane = true;
-			bestIsSphere = false;
+			bestIsGroundPlane = false;
+			bestIsSphere = true;
+
+			bestSphereIndex = i;
 		}
-		
-		// Check for sphere intersection:
-		for (int i = 0; i < numSpheres; i++) {
-			t = findSphereIntersection(spheres[i], currentRay, intersectionPoint, normal);
-			if (t > 0 && t < bestT) {
-				bestT = t;
-				bestIntersectionPoint = intersectionPoint;
-				bestNormal = normal;
+	}
 
-				bestIsGroundPlane = false;
-				bestIsSphere = true;
 
-				bestSphereIndex = i;
+
+
+
+
+
+	// ABSORPTION AND SCATTERING:
+	{ // BEGIN SCOPE.
+		AbsorptionAndScatteringProperties currentAbsorptionAndScattering = absorptionAndScattering[pixelIndex];
+		#define ZERO_ABSORPTION_EPSILON 0.00001
+		if ( currentAbsorptionAndScattering.reducedScatteringCoefficient > 0 || dot(currentAbsorptionAndScattering.absorptionCoefficient, currentAbsorptionAndScattering.absorptionCoefficient) > ZERO_ABSORPTION_EPSILON ) { // The dot product with itself is equivalent to the squre of the length.
+			float randomFloatForScatteringDistance = uniformDistribution(rng);
+			float scatteringDistance = -log(randomFloatForScatteringDistance) / absorptionAndScattering[pixelIndex].reducedScatteringCoefficient;
+			if (scatteringDistance < bestT) {
+				// Both absorption and scattering.
+
+				// Scatter the ray:
+				Ray nextRay;
+				nextRay.origin = positionAlongRay(currentRay, scatteringDistance);
+				float randomFloatForScatteringDirection1 = uniformDistribution(rng);
+				float randomFloatForScatteringDirection2 = uniformDistribution(rng);
+				nextRay.direction = randomDirectionInSphere(randomFloatForScatteringDirection1, randomFloatForScatteringDirection2); // Isoptropic scattering!
+				rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
+
+				// Compute how much light was absorbed along the ray before it was scattered:
+				notAbsorbedColors[pixelIndex] *= computeTransmission(currentAbsorptionAndScattering.absorptionCoefficient, scatteringDistance);
+
+				// DUPLICATE CODE:
+				// To assist Thrust stream compaction, set this activePixel to -1 if the ray weight is now zero:
+				if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // TODO: Faster: dot product of a vector with itself is the same as its length squared.
+					activePixels[activePixelIndex] = -1;
+				}
+
+				// That's it for this iteration!
+				return; // IMPORTANT!
+			} else {
+				// Just absorption.
+
+				notAbsorbedColors[pixelIndex] *= computeTransmission(currentAbsorptionAndScattering.absorptionCoefficient, bestT);
+
+				// Now proceed to compute interaction with intersected object and whatnot!
 			}
 		}
+	} // END SCOPE.
 
-	}
+
+
+
+
+
+	
+
 
 	if (bestIsGroundPlane || bestIsSphere) {
 
-		// TEST:
+
 		Material bestMaterial;
 		if (bestIsGroundPlane) {
-			Material hardCodedGroundMaterial; // = makeEmptyMaterial();
+			Material hardCodedGroundMaterial;
+			SET_DEFAULT_MATERIAL_PROPERTIES(hardCodedGroundMaterial);
 			hardCodedGroundMaterial.diffuseColor = make_float3(0.455, 0.43, 0.39);
-			hardCodedGroundMaterial.emittedColor = make_float3(0,0,0);
-			hardCodedGroundMaterial.specularColor = make_float3(0,0,0);
-			hardCodedGroundMaterial.specularRefractiveIndex = 0;
-			hardCodedGroundMaterial.hasTransmission = false;
+//			hardCodedGroundMaterial.emittedColor = make_float3(0,0,0);
+//			hardCodedGroundMaterial.specularColor = make_float3(0,0,0);
+//			hardCodedGroundMaterial.specularRefractiveIndex = 0;
+//			hardCodedGroundMaterial.hasTransmission = false;
 			bestMaterial = hardCodedGroundMaterial;
 		} else if (bestIsSphere) {
 			bestMaterial = spheres[bestSphereIndex].material;
@@ -460,14 +538,15 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 
 
 
-		// TEST:
+
 		// TODO: Reduce duplicate code and memory usage here and in the functions called here.
 		// TODO: Finish implementing the functions called here.
 		// TODO: Clean all of this up!
 		float3 incident = -currentRay.direction;
 
-		float incidentIOR = AIR_IOR;
-		float transmittedIOR = bestMaterial.specularRefractiveIndex;
+		Medium incidentMedium;
+		SET_TO_AIR_MEDIUM(incidentMedium);
+		Medium transmittedMedium = bestMaterial.medium;
 
 		bool backFace = ( dot(bestNormal, incident) < 0 );
 
@@ -476,25 +555,27 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 			bestNormal *= -1;
 			// Swap the IORs:
 			// TODO: Use the BasicMath swap function if possible on the device.
-			float tempIOR = incidentIOR;
-			incidentIOR = transmittedIOR;
-			transmittedIOR = tempIOR;
+			Medium tempMedium = incidentMedium;
+			incidentMedium = transmittedMedium;
+			transmittedMedium = tempMedium;
 		}
 
-		float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
-		float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, incidentIOR, transmittedIOR);
 
-//		// MOVED:
-//		// Detect total internal reflection!!!
-//		bool totalInternalReflection = ( dot(bestNormal, transmissionDirection) > 0 ); // Currently overrides Fresnel, but TODO: we should really change the Fresnel reflectance to 1 in this case.
+
+
+
+		float3 reflectionDirection = computeReflectionDirection(bestNormal, incident);
+		float3 transmissionDirection = computeTransmissionDirection(bestNormal, incident, incidentMedium.refractiveIndex, transmittedMedium.refractiveIndex);
+
+		float3 bestIntersectionPoint = positionAlongRay(currentRay, bestT);
 
 		float3 biasVector = ( RAY_BIAS_DISTANCE * bestNormal ); // TODO: Bias ray in the other direction if the new ray is transmitted!!!
 
-		bool doSpecular = ( bestMaterial.specularRefractiveIndex > 1.0 ); // TODO: Move?
+		bool doSpecular = ( bestMaterial.medium.refractiveIndex > 1.0 ); // TODO: Move?
 		float rouletteRandomFloat = uniformDistribution(rng);
 		// TODO: Fix long conditional, and maybe lots of temporary variables.
 		// TODO: Optimize total internal reflection case (no random number necessary in that case).
-		bool reflectFromSurface = ( doSpecular && rouletteRandomFloat < computeFresnel(bestNormal, incident, incidentIOR, transmittedIOR, reflectionDirection, transmissionDirection).reflectionCoefficient );
+		bool reflectFromSurface = ( doSpecular && rouletteRandomFloat < computeFresnel(bestNormal, incident, incidentMedium.refractiveIndex, transmittedMedium.refractiveIndex, reflectionDirection, transmissionDirection).reflectionCoefficient );
 		if (reflectFromSurface) {
 			// Ray reflected from the surface. Trace a ray in the reflection direction.
 
@@ -507,6 +588,9 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 			rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
 		} else if (bestMaterial.hasTransmission) {
 			// Ray transmitted and refracted.
+
+			// The ray has passed into a new medium!
+			absorptionAndScattering[pixelIndex] = transmittedMedium.absorptionAndScatteringProperties;
 
 			Ray nextRay;
 			nextRay.origin = bestIntersectionPoint - biasVector; // Bias ray in the other direction because it's transmitted!!!
@@ -524,13 +608,14 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 			float randomFloat2 = uniformDistribution(rng); 
 			Ray nextRay;
 			nextRay.origin = bestIntersectionPoint + biasVector;
-			nextRay.direction = cosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
+			nextRay.direction = randomCosineWeightedDirectionInHemisphere(bestNormal, randomFloat1, randomFloat2);
 			rays[pixelIndex] = nextRay; // Only assigning to global memory ray once, for better performance.
 		}
 
 
+		// DUPLICATE CODE:
 		// To assist Thrust stream compaction, set this activePixel to -1 if the ray weight is now zero:
-		if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // Faster: dot product of a vector with itself is the same as its length squared.
+		if (length(notAbsorbedColors[pixelIndex]) <= MIN_RAY_WEIGHT) { // TODO: Faster: dot product of a vector with itself is the same as its length squared.
 			activePixels[activePixelIndex] = -1;
 		}
 
@@ -585,14 +670,16 @@ void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels,
 	// Declare and allocate active pixels, color arrays, and rays:
 	int* activePixels = NULL;
 	Ray* rays = NULL;
+	AbsorptionAndScatteringProperties* absorptionAndScattering = NULL;
 	Color* notAbsorbedColors = NULL;
 	Color* accumulatedColors = NULL;
 	CUDA_SAFE_CALL( cudaMalloc((void**)&activePixels, numPixels * sizeof(int)) );
 	CUDA_SAFE_CALL( cudaMalloc((void**)&rays, numPixels * sizeof(Ray)) );
+	CUDA_SAFE_CALL( cudaMalloc((void**)&absorptionAndScattering, numPixels * sizeof(AbsorptionAndScatteringProperties)) );
 	CUDA_SAFE_CALL( cudaMalloc((void**)&notAbsorbedColors, numPixels * sizeof(Color)) );
 	CUDA_SAFE_CALL( cudaMalloc((void**)&accumulatedColors, numPixels * sizeof(Color)) );
 
-	initializeActivePixelsAndColors<<<fullBlocksPerGrid, threadsPerBlock>>>(numPixels, activePixels, notAbsorbedColors, accumulatedColors);
+	initializeThings<<<fullBlocksPerGrid, threadsPerBlock>>>(numPixels, activePixels, absorptionAndScattering, notAbsorbedColors, accumulatedColors);
 
 	int numActivePixels = numPixels;
 
@@ -610,7 +697,7 @@ void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels,
 		// Compute the number of blocks required, performing a ceiling operation to make sure there are enough:
 		int newBlocksPerGrid = (numActivePixels + threadsPerBlock - 1) / threadsPerBlock; // Duplicate code.
 
-		traceRayKernel<<<newBlocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numActivePixels, activePixels, rays, rayDepth, notAbsorbedColors, accumulatedColors, counter);
+		traceRayKernel<<<newBlocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numActivePixels, activePixels, rays, rayDepth, absorptionAndScattering, notAbsorbedColors, accumulatedColors, counter);
 		
 
 
@@ -682,6 +769,7 @@ void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels,
 	// TODO: Save these things for the next iteration!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	CUDA_SAFE_CALL( cudaFree( activePixels ) );
 	CUDA_SAFE_CALL( cudaFree( rays ) );
+	CUDA_SAFE_CALL( cudaFree( absorptionAndScattering ) );
 	CUDA_SAFE_CALL( cudaFree( notAbsorbedColors ) );
 	CUDA_SAFE_CALL( cudaFree( accumulatedColors ) );
 

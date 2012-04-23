@@ -39,6 +39,11 @@ void ViewCamera::changeRadius(float m){
 	fixRadius();
 }
 
+void ViewCamera::changeAltitude(float m){
+	centerPosition.y += m;
+	//fixCenterPosition();
+}
+
 void ViewCamera::setResolution(float x, float y){
 	resolution = glm::vec2(x,y);
 	setFOVX(fov.x);
