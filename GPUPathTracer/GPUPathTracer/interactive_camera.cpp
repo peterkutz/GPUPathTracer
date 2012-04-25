@@ -18,7 +18,7 @@ InteractiveCamera::InteractiveCamera()
 	yaw = 0;
 	pitch = 0.3;
 	radius = 4;
-	apertureRadius = 0.1;
+	apertureRadius = 0.04;
 
 	resolution = glm::vec2(512,512);
 	fov = glm::vec2(40, 40);

@@ -67,7 +67,7 @@ Image* PathTracer::render() {
 
 void PathTracer::setUpScene() {
 
-	numSpheres = 15; // TODO: Move this!
+	numSpheres = 14; // TODO: Move this!
 
 }
 
@@ -152,6 +152,11 @@ void PathTracer::createDeviceData() {
 	white.diffuseColor = make_float3(0.9, 0.9, 0.9);
 	white.emittedColor = make_float3(0, 0, 0);
 
+	Material lightBlue;
+	SET_DEFAULT_MATERIAL_PROPERTIES(lightBlue);
+	lightBlue.diffuseColor = make_float3(0.4, 0.6, 0.8);
+	lightBlue.emittedColor = make_float3(0, 0, 0);
+
 	Material gold;
 	SET_DEFAULT_MATERIAL_PROPERTIES(gold);
 	gold.diffuseColor = make_float3(0, 0, 0);
@@ -175,61 +180,59 @@ void PathTracer::createDeviceData() {
 	tempSpheres[0].radius = 0.8;
 	tempSpheres[0].material = steel;
 
-	tempSpheres[1].position = make_float3(0.8, 0, -0.4);
-	tempSpheres[1].radius = 0.8;
-	tempSpheres[1].material = ketchup;
+	tempSpheres[1].position = make_float3(0.9, -0.5, 1.3);
+	tempSpheres[1].radius = 0.3;
+	tempSpheres[1].material = greenGlass;
 
 	tempSpheres[2].position = make_float3(-0.5, -0.4, 1.0);
 	tempSpheres[2].radius = 0.4;
-	tempSpheres[2].material = marble;
+	tempSpheres[2].material = lightBlue;
 
-	tempSpheres[3].position = make_float3(0.8, 1.2, -0.4);
-	tempSpheres[3].radius = 0.4;
-	tempSpheres[3].material = ketchup;
+	tempSpheres[3].position = make_float3(-1.0, -0.7, 1.2);
+	tempSpheres[3].radius = 0.1;
+	tempSpheres[3].material = lightBlue;
 
-	tempSpheres[4].position = make_float3(-1.0, -0.7, 1.2);
+	tempSpheres[4].position = make_float3(-0.5, -0.7, 1.7);
 	tempSpheres[4].radius = 0.1;
-	tempSpheres[4].material = marble;
+	tempSpheres[4].material = lightBlue;
 
-	tempSpheres[5].position = make_float3(-0.5, -0.7, 1.7);
+	tempSpheres[5].position = make_float3(0.3, -0.7, 1.4);
 	tempSpheres[5].radius = 0.1;
-	tempSpheres[5].material = marble;
+	tempSpheres[5].material = lightBlue;
 
-	tempSpheres[6].position = make_float3(0.3, -0.7, 1.4);
+	tempSpheres[6].position = make_float3(-0.1, -0.7, 0.1);
 	tempSpheres[6].radius = 0.1;
-	tempSpheres[6].material = marble;
+	tempSpheres[6].material = lightBlue;
 
-	tempSpheres[7].position = make_float3(-0.1, -0.7, 0.1);
-	tempSpheres[7].radius = 0.1;
-	tempSpheres[7].material = marble;
+	tempSpheres[7].position = make_float3(0.2, -0.55, 0.7);
+	tempSpheres[7].radius = 0.25;
+	tempSpheres[7].material = lightBlue;
 
-	tempSpheres[8].position = make_float3(0.9, -0.5, 1.3);
-	tempSpheres[8].radius = 0.3;
-	tempSpheres[8].material = greenGlass;
+	tempSpheres[8].position = make_float3(0.8, 0, -0.4);
+	tempSpheres[8].radius = 0.8;
+	tempSpheres[8].material = green;
 
-	tempSpheres[9].position = make_float3(0.2, -0.55, 0.7);
-	tempSpheres[9].radius = 0.25;
-	tempSpheres[9].material = marble;
+	tempSpheres[9].position = make_float3(0.8, 1.2, -0.4);
+	tempSpheres[9].radius = 0.4;
+	tempSpheres[9].material = green;
 
 	tempSpheres[10].position = make_float3(0.8, 1.8, -0.4);
 	tempSpheres[10].radius = 0.2;
-	tempSpheres[10].material = ketchup;
+	tempSpheres[10].material = green;
 
 	tempSpheres[11].position = make_float3(0.8, 2.1, -0.4);
 	tempSpheres[11].radius = 0.1;
-	tempSpheres[11].material = ketchup;
+	tempSpheres[11].material = green;
 
 	tempSpheres[12].position = make_float3(0.8, 2.25, -0.4);
 	tempSpheres[12].radius = 0.05;
-	tempSpheres[12].material = ketchup;
+	tempSpheres[12].material = green;
 
 	tempSpheres[13].position = make_float3(0.8, 2.325, -0.4);
 	tempSpheres[13].radius = 0.025;
-	tempSpheres[13].material = ketchup;
+	tempSpheres[13].material = green;
 
-	tempSpheres[14].position = make_float3(-4.0, 15.0, 0.0);
-	tempSpheres[14].radius = 6.0;
-	tempSpheres[14].material = light;
+
 
 
 

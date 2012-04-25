@@ -37,7 +37,7 @@
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 40 // TODO: Put settings somewhere else and don't make them defines.
+#define MAX_TRACE_DEPTH 10 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 #define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
 #define HARD_CODED_GROUND_ELEVATION -0.8
@@ -426,7 +426,7 @@ Color computeBackgroundColor(const float3 & direction) {
 	Color firstColor = make_float3(0.15, 0.3, 0.5); // Bluish.
 	Color secondColor = make_float3(1.0, 1.0, 1.0); // White.
 	Color interpolatedColor = (1 - position) * firstColor + position * secondColor;
-	float radianceMultiplier = 0.3;
+	float radianceMultiplier = 1.0;
 	return interpolatedColor * radianceMultiplier;
 }
 
