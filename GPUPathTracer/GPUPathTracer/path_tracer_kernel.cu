@@ -18,6 +18,7 @@
 #include "basic_math.h"
 
 #include "image.h"
+#include "camera.h"
 #include "sphere.h"
 #include "ray.h"
 #include "camera.h"
@@ -114,7 +115,7 @@ void resizeActivePixels(int numActivePixels, int* activePixels, int* newActivePi
 }
 */
 
-__global__ void raycastFromCameraKernel(float3 eye, float3 view, float3 up, float2 fov, float2 resolution, int numPixels, Ray* rays, unsigned long seed) {
+__global__ void raycastFromCameraKernel(Camera renderCamera, int numPixels, Ray* rays, unsigned long seed) {
 
 	int bx = blockIdx.x;
 	int tx = threadIdx.x;
@@ -123,33 +124,59 @@ __global__ void raycastFromCameraKernel(float3 eye, float3 view, float3 up, floa
 
 	if (validIndex) {
 
-		//get x and y coordinates of pixel
-		int y = int(pixelIndex/resolution.y);
-		int x = pixelIndex - (y*resolution.y);
+		// get x and y coordinates of pixel
+		int y = int(pixelIndex/renderCamera.resolution.y);
+		int x = pixelIndex - (y*renderCamera.resolution.y);
 	
-		//generate random jitter offsets for supersampled antialiasing
+		// generate random jitter offsets for supersampled antialiasing
 		thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(seed) );
-		thrust::uniform_real_distribution<float> uniformDistribution(-0.5, 0.5);
-		float jitterValueX = uniformDistribution(rng); 
-		float jitterValueY = uniformDistribution(rng); 
+		thrust::uniform_real_distribution<float> uniformDistribution(0.0, 1.0); // Changed to 0.0 and 1.0 so I could reuse it for aperture sampling below.
+		float jitterValueX = uniformDistribution(rng) - 0.5; 
+		float jitterValueY = uniformDistribution(rng) - 0.5; 
 
-
-		float lengthOfView = length(view);
-
-		float3 A = cross(view, up);
-		float3 B = cross(A, view);
-		float3 middle = eye + view;
-		float3 horizontal = ( A * float(lengthOfView * tan(fov.x * 0.5 * (PI/180)))) / float(length(A)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
-		float3 vertical = ( B * float(lengthOfView * tan(-fov.y * 0.5 * (PI/180)))) / float(length(B)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5, although I could be missing something.
+		// compute important values
+		renderCamera.view = normalize(renderCamera.view); // view is already supposed to be normalized, but normalize it explicitly just in case.
+		float3 horizontalAxis = cross(renderCamera.view, renderCamera.up);
+		horizontalAxis = normalize(horizontalAxis); // Important!
+		float3 verticalAxis = cross(horizontalAxis, renderCamera.view); 
+		verticalAxis = normalize(verticalAxis); // verticalAxis is normalized by default, but normalize it explicitly just for good measure.
 		
-		float sx = (jitterValueX+x)/(resolution.x-1);
-		float sy = (jitterValueY+y)/(resolution.y-1);
+		// compute point on image plane
+		float3 middle = renderCamera.position + renderCamera.view;
+		float3 horizontal = horizontalAxis * tan(renderCamera.fov.x * 0.5 * (PI/180)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5. I also normzlized A and B, so there's no need to divide by the length of A or B anymore. Also normalized view and removed lengthOfView. Also removed the cast to float.
+		float3 vertical = verticalAxis * tan(-renderCamera.fov.y * 0.5 * (PI/180)); // Now treating FOV as the full FOV, not half, so I multiplied it by 0.5. I also normzlized A and B, so there's no need to divide by the length of A or B anymore. Also normalized view and removed lengthOfView. Also removed the cast to float.
+		
+		float sx = (jitterValueX+x)/(renderCamera.resolution.x-1);
+		float sy = (jitterValueY+y)/(renderCamera.resolution.y-1);
 
-		float3 point = middle + (((2*sx)-1)*horizontal) + (((2*sy)-1)*vertical);
-		float3 eyeToPoint = point - eye;
+		float3 pointOnPlaneOneUnitAwayFromEye = middle + ( ((2*sx)-1) * horizontal) + ( ((2*sy)-1) * vertical);
 
-		rays[pixelIndex].direction = normalize(eyeToPoint);
-		rays[pixelIndex].origin = eye;
+		// move and resize image plane based on focalDistance
+		// could also incorporate this into the original computations of the point
+		float3 pointOnImagePlane = renderCamera.position + ( (pointOnPlaneOneUnitAwayFromEye - renderCamera.position) * renderCamera.focalDistance ); // Important for depth of field!
+
+		// now compute the point on the aperture (or lens)
+		float3 aperturePoint;
+		if (renderCamera.apertureRadius > 0.00001) { // The small number is an epsilon value.
+			// generate random numbers for sampling a point on the aperture
+			float random1 = uniformDistribution(rng);
+			float random2 = uniformDistribution(rng);
+
+			// sample a point on the circular aperture
+			float angle = TWO_PI * random1;
+			float distance = renderCamera.apertureRadius * sqrt(random2);
+
+			float apertureX = cos(angle) * distance;
+			float apertureY = sin(angle) * distance;
+
+			aperturePoint = renderCamera.position + (apertureX * horizontalAxis) + (apertureY * verticalAxis);
+		} else {
+			aperturePoint = renderCamera.position;
+		}
+		float3 apertureToImagePlane = pointOnImagePlane - aperturePoint;
+
+		rays[pixelIndex].direction = normalize(apertureToImagePlane);
+		rays[pixelIndex].origin = aperturePoint;
 
 		//accumulatedColors[pixelIndex] = rays[pixelIndex].direction;	//test code, should output green/yellow/black/red if correct
 	}
@@ -653,7 +680,7 @@ struct isNegative
 
 
 extern "C"
-void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, int counter, Camera* renderCam) {
+void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, int counter, Camera renderCamera) {
 	
 
 
@@ -686,7 +713,7 @@ void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels,
 	// Run this every pass so we can do anti-aliasing using jittering.
 	// If we don't want to re-compute the camera rays, we'll need a separate array for secondary rays.
 	
-	raycastFromCameraKernel<<<fullBlocksPerGrid, threadsPerBlock>>>(renderCam->position, renderCam->view, renderCam->up, renderCam->fov, renderCam->resolution, numPixels, rays, counter);
+	raycastFromCameraKernel<<<fullBlocksPerGrid, threadsPerBlock>>>(renderCamera, numPixels, rays, counter);
 
 
 

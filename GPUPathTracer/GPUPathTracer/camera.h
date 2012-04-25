@@ -9,6 +9,8 @@ struct Camera {
 	float3 view;
 	float3 up;
 	float2 fov; 
+	float apertureRadius;
+	float focalDistance;
 };
 
 #endif // CAMERA_H

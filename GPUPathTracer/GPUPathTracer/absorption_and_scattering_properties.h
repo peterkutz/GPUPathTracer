@@ -12,7 +12,7 @@ struct AbsorptionAndScatteringProperties {
 };
 
 // TODO: Figure out a way to do this without a macro! Ideally, figure out how to use classes in CUDA.
-#define SET_TO_AIR_ABSORPTION_AND_SCATTERING_PROPERTIES(absorptionAndScatteringProperties)		            \
+#define SET_TO_AIR_ABSORPTION_AND_SCATTERING_PROPERTIES(absorptionAndScatteringProperties)		                \
 {																						                        \
 	AbsorptionAndScatteringProperties airAbsorptionAndScatteringProperties = {make_float3(0,0,0), 0};		    \
 	absorptionAndScatteringProperties = airAbsorptionAndScatteringProperties;									\

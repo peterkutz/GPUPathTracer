@@ -22,7 +22,7 @@
 
 #include "path_tracer.h"
 #include "image.h"
-#include "view_camera.h"
+#include "interactive_camera.h"
 #include "basic_math.h"
 #include "camera.h"
 
@@ -39,11 +39,10 @@ int mouse_buttons = 0;
 float rotate_x = 0.0, rotate_y = 0.0;
 float translate_z = -30.0;
 
-ViewCamera* viewCamera = new ViewCamera();
-
-Camera* renderCamera;
-
-PathTracer* pathTracer;
+// TODO: Delete stuff at some point!!!
+InteractiveCamera* interactiveCamera = NULL;
+Camera* renderCamera = NULL;
+PathTracer* pathTracer = NULL;
 
 #define PATH_TRACER_BITMAP 13
 
@@ -78,17 +77,20 @@ int main( int argc, char** argv) {
 
 void initCamera()
 {
-	viewCamera->setResolution(window_width, window_height);
-	viewCamera->setFOVX(45);
+	delete interactiveCamera;
+	interactiveCamera = new InteractiveCamera();
+
+	interactiveCamera->setResolution(window_width, window_height);
+	interactiveCamera->setFOVX(45);
 }
 
 void initializeThings( int argc, char** argv) {
 	
 	initCamera();
 
-	renderCamera = new Camera;
+	renderCamera = new Camera();
 
-	viewCamera->buildRenderCam(renderCamera);
+	interactiveCamera->buildRenderCamera(renderCamera);
 
 	pathTracer = new PathTracer(renderCamera);
 
@@ -180,7 +182,7 @@ bool initGL() {
 ////////////////////////////////////////////////////////////////////////////////
 void display() {
 
-	viewCamera->buildRenderCam(pathTracer->renderCam);
+	interactiveCamera->buildRenderCamera(pathTracer->renderCamera);
 
 	Image* imageReference = pathTracer->render(); 
 
@@ -292,17 +294,17 @@ void motion(int x, int y)
 
 		if (theButtonState == GLUT_LEFT_BUTTON)  // Rotate
 		{
-			viewCamera->changeYaw(deltaX * 0.01);
-			viewCamera->changePitch(-deltaY * 0.01);
+			interactiveCamera->changeYaw(deltaX * 0.01);
+			interactiveCamera->changePitch(-deltaY * 0.01);
 		}
 		else if (theButtonState == GLUT_MIDDLE_BUTTON) // Zoom
 		{
-			viewCamera->changeAltitude(-deltaY * 0.01);
+			interactiveCamera->changeAltitude(-deltaY * 0.01);
 		}    
 
 		if (theButtonState == GLUT_RIGHT_BUTTON) // camera move
 		{
-			viewCamera->changeRadius(-deltaY * 0.01);
+			interactiveCamera->changeRadius(-deltaY * 0.01);
 
 			if (theModifierState & GLUT_ACTIVE_ALT) // Pan
 			{

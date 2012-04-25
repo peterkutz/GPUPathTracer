@@ -186,14 +186,14 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="ray.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="absorption_and_scattering_properties.h" />
-    <ClInclude Include="view_camera.h" />
+    <ClInclude Include="interactive_camera.h" />
     <ClInclude Include="windows_include.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="basic_math.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
-    <ClCompile Include="view_camera.cpp" />
+    <ClCompile Include="interactive_camera.cpp" />
     <ClCompile Include="color.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="image.cpp" />

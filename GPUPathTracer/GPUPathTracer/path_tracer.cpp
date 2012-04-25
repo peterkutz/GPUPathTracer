@@ -25,9 +25,9 @@
 
 PathTracer::PathTracer(Camera* cam) {
 
-	renderCam = cam;
+	renderCamera = cam;
 
-	image = newImage(renderCam->resolution.x, renderCam->resolution.y);
+	image = newImage(renderCamera->resolution.x, renderCamera->resolution.y);
 
 	setUpScene();
 
@@ -45,14 +45,14 @@ PathTracer::~PathTracer() {
 
 void PathTracer::reset() {
 	deleteImage(image); // Very important!
-	image = newImage(renderCam->resolution.x, renderCam->resolution.y); 
+	image = newImage(renderCamera->resolution.x, renderCamera->resolution.y); 
 }
 
 
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
 
-	launchKernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, image->passCounter, renderCam);
+	launchKernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, image->passCounter, *renderCamera); // Dereference not ideal.
 
 	// TODO: Make a function for this (or a method---maybe Image can just be a class).
 	for (int i = 0; i < image->numPixels; i++) {
@@ -76,6 +76,10 @@ void PathTracer::createDeviceData() {
     // Initialize data:
 
 	Sphere* tempSpheres = new Sphere[numSpheres];
+
+
+
+
 
 
 
@@ -140,7 +144,7 @@ void PathTracer::createDeviceData() {
 	ketchup.specularColor = make_float3(1, 1, 1);
 	ketchup.hasTransmission = true;
 	ketchup.medium.refractiveIndex = 1.350;
-	ketchup.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(0.02, 5.1, 5.7); // 
+	ketchup.medium.absorptionAndScatteringProperties.absorptionCoefficient = make_float3(0.02, 5.1, 5.7);
 	ketchup.medium.absorptionAndScatteringProperties.reducedScatteringCoefficient = 9.0;
 
 	Material white;
@@ -169,7 +173,7 @@ void PathTracer::createDeviceData() {
 
 	tempSpheres[0].position = make_float3(-0.9, 0, -0.9);
 	tempSpheres[0].radius = 0.8;
-	tempSpheres[0].material = something;
+	tempSpheres[0].material = steel;
 
 	tempSpheres[1].position = make_float3(0.8, 0, -0.4);
 	tempSpheres[1].radius = 0.8;
@@ -226,6 +230,12 @@ void PathTracer::createDeviceData() {
 	tempSpheres[14].position = make_float3(-4.0, 15.0, 0.0);
 	tempSpheres[14].radius = 6.0;
 	tempSpheres[14].material = light;
+
+
+
+
+
+
 
 
 
