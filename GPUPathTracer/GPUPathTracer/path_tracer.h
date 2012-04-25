@@ -6,6 +6,7 @@ struct Image;
 struct Sphere;
 struct Ray;
 struct Camera;
+struct Poly;
 
 class PathTracer {
 
@@ -14,9 +15,10 @@ private:
 	Image* image;
 
 	int numSpheres;
-
+	int numPolys;
 	Sphere* spheres;
-	
+	Poly* polys;
+	Poly* dev_polys;
 	void createDeviceData();
 	void deleteDeviceData();
 
@@ -31,6 +33,8 @@ public:
 	Image* render();
 
 	Camera* renderCamera;
+
+	void prepMesh();
 };
 
 #endif // PATH_TRACER_H

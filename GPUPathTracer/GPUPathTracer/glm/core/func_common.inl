@@ -1211,7 +1211,7 @@ namespace glm
 #if(GLM_COMPILER & GLM_COMPILER_VC)
 		return typename genType::bool_type(_isnan(x));
 #else
-		return typename genType::bool_type(std::isnan(x));
+		return typename genType::bool_type(isnan(x));
 #endif
 	}
 
@@ -1262,7 +1262,7 @@ namespace glm
 #if(GLM_COMPILER & GLM_COMPILER_VC)
 		return typename genType::bool_type(_fpclass(x) == _FPCLASS_NINF || _fpclass(x) == _FPCLASS_PINF);
 #else
-		return typename genType::bool_type(std::isinf(x));
+		return typename genType::bool_type(isinf(x));
 #endif
 	}
 

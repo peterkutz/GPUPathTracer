@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="basic_math.cpp" />
+    <ClCompile Include="interactive_camera.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="display.cpp" />
+    <ClCompile Include="image.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="cukd\test.cpp">
+      <Filter>cukd</Filter>
+    </ClCompile>
+    <ClCompile Include="path_tracer.cpp" />
+    <ClCompile Include="objcore\obj.cpp">
+      <Filter>objcore</Filter>
+    </ClCompile>
+    <ClCompile Include="objcore\objloader.cpp">
+      <Filter>objcore</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="basic_math.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="color.h" />
+    <ClInclude Include="cuda_safe_call.h" />
+    <ClInclude Include="cutil_math.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="material.h" />
+    <ClInclude Include="medium.h" />
+    <ClInclude Include="path_tracer.h" />
+    <ClInclude Include="path_tracer_kernel.h" />
+    <ClInclude Include="ray.h" />
+    <ClInclude Include="sphere.h" />
+    <ClInclude Include="absorption_and_scattering_properties.h" />
+    <ClInclude Include="interactive_camera.h" />
+    <ClInclude Include="windows_include.h" />
+    <ClInclude Include="cukd\kdtree.h">
+      <Filter>cukd</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\primitives.h">
+      <Filter>cukd</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\utils.h">
+      <Filter>cukd</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\utils\intersection.h">
+      <Filter>cukd\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\dev_structs.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\kdtree_node_array.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\node_array.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\node_chunk_array.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\small_node_array.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\detail\split_candidate_array.h">
+      <Filter>cukd\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\algorithms\reduction.h">
+      <Filter>cukd\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\algorithms\reduction-inl.h">
+      <Filter>cukd\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="cukd\algorithms\shared_mem.h">
+      <Filter>cukd\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="objcore\obj.h">
+      <Filter>objcore</Filter>
+    </ClInclude>
+    <ClInclude Include="objcore\objloader.h">
+      <Filter>objcore</Filter>
+    </ClInclude>
+    <ClInclude Include="poly.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="path_tracer_kernel.cu" />
+    <CudaCompile Include="cukd\kdtree.cu">
+      <Filter>cukd</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\utils\primitives.cu">
+      <Filter>cukd\utils</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\kdtree_kernels.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\kdtree_node_array.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\kdtree_node_array_kernels.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\node_chunk_array.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\node_chunk_array_kernels.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\small_node_array.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\small_node_array_kernels.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\detail\split_candidate_array.cu">
+      <Filter>cukd\detail</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cukd\algorithms\reduction.cu">
+      <Filter>cukd\algorithms</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cukd">
+      <UniqueIdentifier>{bc82e9fc-00d4-468f-a35a-0828d6c1f00d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cukd\algorithms">
+      <UniqueIdentifier>{d90e9765-08a9-41cf-875a-58a7dfc49026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cukd\detail">
+      <UniqueIdentifier>{2ff789a5-db56-4925-82f5-e870c24eb8a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cukd\utils">
+      <UniqueIdentifier>{699ff8f8-e2f1-4dbf-a844-12cf90f3fcb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="objcore">
+      <UniqueIdentifier>{2df9d538-c7c8-4657-bb67-d7cc725487cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cutil">
+      <UniqueIdentifier>{058db376-ef10-49e6-8e8e-d9de02943a69}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

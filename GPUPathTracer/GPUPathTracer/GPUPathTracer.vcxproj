@@ -47,7 +47,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.1.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -122,7 +122,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
@@ -139,6 +139,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
+      <Include>C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,7 +148,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../glm;../freeglut/include;../glew/include;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
@@ -164,9 +165,21 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
+      <Include>C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="cukd\algorithms\reduction.cu" />
+    <CudaCompile Include="cukd\detail\kdtree_kernels.cu" />
+    <CudaCompile Include="cukd\detail\kdtree_node_array.cu" />
+    <CudaCompile Include="cukd\detail\kdtree_node_array_kernels.cu" />
+    <CudaCompile Include="cukd\detail\node_chunk_array.cu" />
+    <CudaCompile Include="cukd\detail\node_chunk_array_kernels.cu" />
+    <CudaCompile Include="cukd\detail\small_node_array.cu" />
+    <CudaCompile Include="cukd\detail\small_node_array_kernels.cu" />
+    <CudaCompile Include="cukd\detail\split_candidate_array.cu" />
+    <CudaCompile Include="cukd\kdtree.cu" />
+    <CudaCompile Include="cukd\utils\primitives.cu" />
     <CudaCompile Include="path_tracer_kernel.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">compute_20,sm_20</CodeGeneration>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_20,sm_20</CodeGeneration>
@@ -177,10 +190,26 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="cuda_safe_call.h" />
+    <ClInclude Include="cukd\algorithms\reduction-inl.h" />
+    <ClInclude Include="cukd\algorithms\reduction.h" />
+    <ClInclude Include="cukd\algorithms\shared_mem.h" />
+    <ClInclude Include="cukd\detail\dev_structs.h" />
+    <ClInclude Include="cukd\detail\kdtree_node_array.h" />
+    <ClInclude Include="cukd\detail\node_array.h" />
+    <ClInclude Include="cukd\detail\node_chunk_array.h" />
+    <ClInclude Include="cukd\detail\small_node_array.h" />
+    <ClInclude Include="cukd\detail\split_candidate_array.h" />
+    <ClInclude Include="cukd\kdtree.h" />
+    <ClInclude Include="cukd\primitives.h" />
+    <ClInclude Include="cukd\utils.h" />
+    <ClInclude Include="cukd\utils\intersection.h" />
     <ClInclude Include="cutil_math.h" />
+    <ClInclude Include="poly.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="medium.h" />
+    <ClInclude Include="objcore\obj.h" />
+    <ClInclude Include="objcore\objloader.h" />
     <ClInclude Include="path_tracer.h" />
     <ClInclude Include="path_tracer_kernel.h" />
     <ClInclude Include="ray.h" />
@@ -193,15 +222,18 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClCompile Include="basic_math.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
+    <ClCompile Include="cukd\test.cpp" />
     <ClCompile Include="interactive_camera.cpp" />
     <ClCompile Include="color.cpp" />
     <ClCompile Include="display.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="objcore\obj.cpp" />
+    <ClCompile Include="objcore\objloader.cpp" />
     <ClCompile Include="path_tracer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.1.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.targets" />
   </ImportGroup>
 </Project>

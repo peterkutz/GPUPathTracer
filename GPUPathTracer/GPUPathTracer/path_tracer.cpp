@@ -4,6 +4,7 @@
 #include "sphere.h"
 #include "ray.h"
 #include "camera.h"
+#include "poly.h"
 
 #include "windows_include.h"
 
@@ -21,7 +22,7 @@
 
 #include "path_tracer_kernel.h"
 
-
+#include "objcore/objloader.h"
 
 PathTracer::PathTracer(Camera* cam) {
 
@@ -29,10 +30,15 @@ PathTracer::PathTracer(Camera* cam) {
 
 	image = newImage(renderCamera->resolution.x, renderCamera->resolution.y);
 
+	numPolys = 0;
+
+	//prepMesh();
+
 	setUpScene();
 
 	createDeviceData();
 
+	
 }
 
 
@@ -41,6 +47,42 @@ PathTracer::~PathTracer() {
 	deleteDeviceData();
 	deleteImage(image);
 
+}
+
+void::PathTracer::prepMesh(){
+	obj* m = new obj();
+	objLoader meshload("../diamond.obj", m);
+
+	polys = new Poly[m->getFaces()->size()];
+
+	for(int i=0; i<m->getFaces()->size(); i++){
+		glm::vec4 p0 = m->getPoints()->operator[](m->getFaces()->operator[](i)[0]);
+		glm::vec4 p1 = m->getPoints()->operator[](m->getFaces()->operator[](i)[1]);
+		glm::vec4 p2 = m->getPoints()->operator[](m->getFaces()->operator[](i)[2]);
+		glm::vec4 n = m->getNormals()->operator[](m->getFaceNormals()->operator[](i)[0]);
+		polys[i].n = make_float3(n[0], n[1], n[2]);
+		polys[i].p0 = make_float3(p0[0], p0[1], p0[2]);
+		polys[i].p1 = make_float3(p1[0], p1[1], p1[2]);
+		polys[i].p2 = make_float3(p2[0], p2[1], p2[2]);
+	}
+
+	numPolys = m->getFaces()->size();
+
+	/*std::vector<Triangle> tris;
+	for(int i=0; i<m->getFaces()->size(); i++){
+		Triangle tri;
+		for(int j = 0; j < 3; ++j) {
+			glm::vec4 p = m->getPoints()->operator[](m->getFaces()->operator[](i)[j]);
+			glm::vec4 n = m->getNormals()->operator[](m->getFaceNormals()->operator[](i)[j]);
+            tri.v[j].f3.vec.x = p[0]; tri.v[j].f3.vec.y = p[1]; tri.v[j].f3.vec.z = p[2];
+            tri.n[j].f3.vec.x = n[0]; tri.n[j].f3.vec.y = n[1]; tri.n[j].f3.vec.z = n[2];
+        }
+		tris.push_back(tri);
+	}
+	TriangleArray triarr = TriangleArray(tris);
+
+	constructKDTree(triarr, m->getMin()[0], m->getMin()[1],  m->getMin()[2],  m->getMax()[0],  m->getMax()[1],  m->getMax()[2]);
+	*/
 }
 
 void PathTracer::reset() {
@@ -52,7 +94,7 @@ void PathTracer::reset() {
 Image* PathTracer::render() {
 	Image* singlePassImage = newImage(image->width, image->height);
 
-	launchKernel(numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, image->passCounter, *renderCamera); // Dereference not ideal.
+	launchKernel(numPolys, dev_polys, numSpheres, spheres, singlePassImage->numPixels, singlePassImage->pixels, image->passCounter, *renderCamera); // Dereference not ideal.
 
 	// TODO: Make a function for this (or a method---maybe Image can just be a class).
 	for (int i = 0; i < image->numPixels; i++) {
@@ -76,13 +118,6 @@ void PathTracer::createDeviceData() {
     // Initialize data:
 
 	Sphere* tempSpheres = new Sphere[numSpheres];
-
-
-
-
-
-
-
 
 	// TEMPORARY hard-coded spheres:
 
@@ -112,8 +147,9 @@ void PathTracer::createDeviceData() {
 
 	Material glass;
 	SET_DEFAULT_MATERIAL_PROPERTIES(glass);
+	purple.diffuseColor = make_float3(0,0,0);
 	glass.specularColor = make_float3(1, 1, 1);
-	glass.medium.refractiveIndex = 1.62; // Typical flint.
+	glass.medium.refractiveIndex = 2.42; // Typical flint.
 	glass.hasTransmission = true;
 
 	Material greenGlass;
@@ -236,18 +272,16 @@ void PathTracer::createDeviceData() {
 
 
 
-
-
-
-
-
-
-
-
+	for(int i = 0; i<numPolys; i++){
+		polys[i].position = make_float3(0.0,-0.8,0.0);
+		polys[i].material = glass;
+	}
 
     // Copy to GPU:
 	CUDA_SAFE_CALL( cudaMalloc( (void**)&spheres, numSpheres * sizeof(Sphere) ) );
+	CUDA_SAFE_CALL( cudaMalloc( (void**)&dev_polys, numPolys * sizeof(Poly) ) );
     CUDA_SAFE_CALL( cudaMemcpy( spheres, tempSpheres, numSpheres * sizeof(Sphere), cudaMemcpyHostToDevice) );
+	CUDA_SAFE_CALL( cudaMemcpy( dev_polys, polys, numPolys * sizeof(Poly), cudaMemcpyHostToDevice) );
 
     delete [] tempSpheres;
 }

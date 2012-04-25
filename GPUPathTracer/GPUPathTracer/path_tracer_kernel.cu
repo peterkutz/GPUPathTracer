@@ -20,6 +20,7 @@
 #include "image.h"
 #include "camera.h"
 #include "sphere.h"
+#include "poly.h"
 #include "ray.h"
 #include "camera.h"
 #include "fresnel.h"
@@ -33,11 +34,17 @@
 #include <thrust/functional.h>
 #include <thrust/remove.h>
 
+/*#include "cukd/kdtree.h"
+#include "cukd/primitives.h"
+#include "cukd/utils.h"*/
+
+//using namespace cukd;
+
 
 
 // Settings:
 #define BLOCK_SIZE 256 // Number of threads in a block.
-#define MAX_TRACE_DEPTH 10 // TODO: Put settings somewhere else and don't make them defines.
+#define MAX_TRACE_DEPTH 30 // TODO: Put settings somewhere else and don't make them defines.
 #define RAY_BIAS_DISTANCE 0.0002 // TODO: Put with other settings somewhere.
 #define MIN_RAY_WEIGHT 0.00001 // Terminate rays below this weight.
 #define HARD_CODED_GROUND_ELEVATION -0.8
@@ -66,7 +73,7 @@ __device__ double doubleInfinity() {
 */
 
 __host__ __device__
-unsigned int hash(unsigned int a) {
+unsigned int randhash(unsigned int a) {
     a = (a+0x7ed55d16) + (a<<12);
     a = (a^0xc761c23c) ^ (a>>19);
     a = (a+0x165667b1) + (a<<5);
@@ -129,7 +136,7 @@ __global__ void raycastFromCameraKernel(Camera renderCamera, int numPixels, Ray*
 		int x = pixelIndex - (y*renderCamera.resolution.y);
 	
 		// generate random jitter offsets for supersampled antialiasing
-		thrust::default_random_engine rng( hash(seed) * hash(pixelIndex) * hash(seed) );
+		thrust::default_random_engine rng( randhash(seed) * randhash(pixelIndex) * randhash(seed) );
 		thrust::uniform_real_distribution<float> uniformDistribution(0.0, 1.0); // Changed to 0.0 and 1.0 so I could reuse it for aperture sampling below.
 		float jitterValueX = uniformDistribution(rng) - 0.5; 
 		float jitterValueY = uniformDistribution(rng) - 0.5; 
@@ -173,6 +180,7 @@ __global__ void raycastFromCameraKernel(Camera renderCamera, int numPixels, Ray*
 		} else {
 			aperturePoint = renderCamera.position;
 		}
+		//aperturePoint = renderCamera.position;
 		float3 apertureToImagePlane = pointOnImagePlane - aperturePoint;
 
 		rays[pixelIndex].direction = normalize(apertureToImagePlane);
@@ -210,7 +218,34 @@ float findGroundPlaneIntersection(float elevation, const Ray & ray, float3 & nor
 	return -1; // No intersection.
 }
 
+//dev_RayTriIntersect: triangle intersection test
+//a/b/c are vertices of triangle
+//o is ray origin, d is ray direction
+//out_lambda is intersection parameter lambda, out_bary1/2 are barycentric hit coordinates
+//adapted from MNRT code by Mathias Neumann
+inline __device__ bool FindTriangleIntersect(const float3 a, const float3 b, const float3 c, 
+										   const float3 o, const float3 d,
+										   float& out_lambda, float& out_bary1, float& out_bary2)
+{
+	float3 edge1 = b - a;
+	float3 edge2 = c - a;
 
+	float3 pvec = cross(d, edge2);
+	float det = dot(edge1, pvec);
+	if(det == 0.f)
+		return false;
+	float inv_det = 1.0f / det;
+
+	float3 tvec = o - a;
+	out_bary1 = dot(tvec, pvec) * inv_det;
+
+	float3 qvec = cross(tvec, edge1);
+	out_bary2 = dot(d, qvec) * inv_det;
+	out_lambda = dot(edge2, qvec) * inv_det;
+
+	bool hit = (out_bary1 >= 0.0f && out_bary2 >= 0.0f && (out_bary1 + out_bary2) <= 1.0f);
+	return hit;
+}
 
 __host__ __device__
 //assumes that ray is already transformed into sphere's object space, returns -1 if no intersection
@@ -439,7 +474,7 @@ Color computeTransmission(Color absorptionCoefficient, float distance) {
 	return transmitted;
 }
 
-__global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, AbsorptionAndScatteringProperties* absorptionAndScattering, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
+__global__ void traceRayKernel(int numPolys, Poly* polys, int numSpheres, Sphere* spheres, int numActivePixels, int* activePixels, Ray* rays, int rayDepth, AbsorptionAndScatteringProperties* absorptionAndScattering, float3* notAbsorbedColors, float3* accumulatedColors, unsigned long seedOrPass) {
 
 //__shared__ float4 something[BLOCK_SIZE]; // 256 (threads per block) * 4 (floats per thread) * 4 (bytes per float) = 4096 (bytes per block)
 
@@ -454,14 +489,16 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 	int pixelIndex = activePixels[activePixelIndex];
 	Ray currentRay = rays[pixelIndex];
 
-	thrust::default_random_engine rng( hash(seedOrPass) * hash(pixelIndex) * hash(rayDepth) );
+	thrust::default_random_engine rng( randhash(seedOrPass) * randhash(pixelIndex) * randhash(rayDepth) );
 	thrust::uniform_real_distribution<float> uniformDistribution(0,1);
 
 	float bestT = 123456789; // floatInfinity(); // std::numeric_limits<float>::infinity();
 	float3 bestNormal;// = make_float3(0,0,0);
 	bool bestIsGroundPlane = false;
 	bool bestIsSphere = false;
+	bool bestIsPoly = false;
 	int bestSphereIndex = -1;
+	int bestPolyIndex = -1;
 
 	//if (true) { // Test. I did this to contain the local variables to isolate a bug (I suspected that I was using one of these local variables below by mistake, so scoping them caused a helpful compiler error to tell me where). But now I'm also wondering if those local variables just sit there and waste registers if they don't go out of scope.
 
@@ -477,6 +514,7 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 
 		bestIsGroundPlane = true;
 		bestIsSphere = false;
+		bestIsPoly = false;
 	}
 		
 	// Check for sphere intersection:
@@ -488,15 +526,35 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 
 			bestIsGroundPlane = false;
 			bestIsSphere = true;
+			bestIsPoly = false;
 
 			bestSphereIndex = i;
 		}
 	}
 
 
+	for(int i = 0; i < numPolys; i++){
+		float pt;
+		float ob1;
+		float ob2;
+		bool tr = FindTriangleIntersect(polys[i].p0, polys[i].p1, polys[i].p2, currentRay.origin, currentRay.direction, pt, ob1, ob2 );
+		
+		if(tr){
+		t = pt;
+		if (t > 0 && t < bestT) {
+			bestT = t;
+			bestNormal = polys[i].n;
+
+			bestIsGroundPlane = false;
+			bestIsSphere = false;
+			bestIsPoly = true;
+
+			bestPolyIndex = i;
+		}
+		}
 
 
-
+	}
 
 
 	// ABSORPTION AND SCATTERING:
@@ -546,7 +604,7 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 	
 
 
-	if (bestIsGroundPlane || bestIsSphere) {
+	if (bestIsGroundPlane || bestIsSphere || bestIsPoly) {
 
 
 		Material bestMaterial;
@@ -561,6 +619,8 @@ __global__ void traceRayKernel(int numSpheres, Sphere* spheres, int numActivePix
 			bestMaterial = hardCodedGroundMaterial;
 		} else if (bestIsSphere) {
 			bestMaterial = spheres[bestSphereIndex].material;
+		} else if(bestIsPoly){
+			bestMaterial = polys[bestPolyIndex].material;
 		}
 
 
@@ -677,10 +737,28 @@ struct isNegative
 	}
 };
 
+/*
+extern "C"
+void constructKDTree(TriangleArray triarr, float minx, float miny, float minz, float maxx, float maxy, float maxz){
+
+	std::cout << "Building GPU KD-Tree..." << std::endl;
+
+
+	triarr.compute_aabbs();
+	UAABB root_aabb;
+	root_aabb.minimum = make_ufloat4(minx, miny, minz,0);
+    root_aabb.maximum = make_ufloat4(maxx, maxy, maxz,0);
+	cukd::KDTree kdtree(root_aabb, triarr, 64);
+	kdtree.create();
+    kdtree.preorder();
+
+	std::cout << "Built GPU KD-Tree!" << std::endl;
+}*/
+
 
 
 extern "C"
-void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels, int counter, Camera renderCamera) {
+void launchKernel(int numPolys, Poly* polys, int numSpheres, Sphere* spheres, int numPixels, Color* pixels, int counter, Camera renderCamera) {
 	
 
 
@@ -724,7 +802,7 @@ void launchKernel(int numSpheres, Sphere* spheres, int numPixels, Color* pixels,
 		// Compute the number of blocks required, performing a ceiling operation to make sure there are enough:
 		int newBlocksPerGrid = (numActivePixels + threadsPerBlock - 1) / threadsPerBlock; // Duplicate code.
 
-		traceRayKernel<<<newBlocksPerGrid, threadsPerBlock>>>(numSpheres, spheres, numActivePixels, activePixels, rays, rayDepth, absorptionAndScattering, notAbsorbedColors, accumulatedColors, counter);
+		traceRayKernel<<<newBlocksPerGrid, threadsPerBlock>>>(numPolys, polys, numSpheres, spheres, numActivePixels, activePixels, rays, rayDepth, absorptionAndScattering, notAbsorbedColors, accumulatedColors, counter);
 		
 
 
