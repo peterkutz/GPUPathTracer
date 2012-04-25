@@ -156,6 +156,8 @@ void PathTracer::createDeviceData() {
 	SET_DEFAULT_MATERIAL_PROPERTIES(lightBlue);
 	lightBlue.diffuseColor = make_float3(0.4, 0.6, 0.8);
 	lightBlue.emittedColor = make_float3(0, 0, 0);
+	lightBlue.specularColor = make_float3(1, 1, 1);
+	lightBlue.medium.refractiveIndex = 1.2; // Less than water.
 
 	Material gold;
 	SET_DEFAULT_MATERIAL_PROPERTIES(gold);
